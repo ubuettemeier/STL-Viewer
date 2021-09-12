@@ -1,0 +1,8 @@
+# no execute files
+stlviewer
+
+# no object-files
+*.o
+
+# no folder
+.vscode/
