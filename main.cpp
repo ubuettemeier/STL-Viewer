@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.1
+ * @version v0.0.2
  * @date 2021-09-12
  */
 
