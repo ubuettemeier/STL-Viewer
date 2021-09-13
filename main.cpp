@@ -2,9 +2,11 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.5
+ * @version v0.0.6
  * @date 2021-09-12
  */
+
+#define USE_FULL_SCREEN_
 
 #include <iostream>
 
@@ -43,6 +45,7 @@ void help()
     cout << "- : Zoom -\n";
     cout << "t : draw triangle ON/OFF\n";
     cout << "l : draw line ON/OFF\n";
+    cout << "p : draw point ON/OFF\n";
     cout << "\n";
 }
 
@@ -155,12 +158,12 @@ static void glutDisplay()
 void keyboard( unsigned char key, int x, int y) 
 {
     switch (key) {
-        case 27:                        // ESC
+        case 27:            // ESC
             stlcmd::clear_allstl();         // clear all stl-data
             glutDestroyWindow(glutGetWindow ());
             break;
-        case '-':
-        case '+': {
+        case '-':           // zoom kleiner
+        case '+': {         // zoom größer
             float r[3];     // Richtung
             vec3sub (look_at, eye, r);
             vec3Normalize (r);
@@ -170,21 +173,58 @@ void keyboard( unsigned char key, int x, int y)
             vec3add (look_at, r, look_at);
             }
             break;
-        case 't':
-        case 'l':
-        case 'p':
+        case 't':       // draw triangle
+        case 'l':       // draw line
+        case 'p':       // draw point
             for (size_t i=0; i<stlcmd::allstl.size(); i++) {
                 uint8_t akt_mode = stlcmd::allstl[i]->get_draw_mode();
                 uint8_t mode; //  = (key=='t') ? stlcmd::draw_tringle : stlcmd::draw_line;
-                if (key == 't') mode = stlcmd::draw_tringle;
+                if (key == 't') mode = stlcmd::draw_triangle;
                 if (key == 'l') mode = stlcmd::draw_line;
                 if (key == 'p') mode = stlcmd::draw_point;
 
                 (akt_mode & mode) ? akt_mode &= ~mode : akt_mode |= mode;
                 if (akt_mode == 0)
-                    akt_mode = stlcmd::draw_tringle;
+                    akt_mode = stlcmd::draw_triangle;
 
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
+            }
+            break;
+    }
+}
+
+/********************************************************************
+ * @brief   void specialkey( int key, int x, int y) 
+ */
+void specialkey( int key, int x, int y) 
+{
+    // cout << key << endl;
+    switch (key) {
+        case 100:           // rechts
+        case 102: {         // links
+                float foo[3];
+                float alpha = (key == 100) ? 15.0f : -15.0f;
+                vec3add (stlcmd::center_ges, up, foo);
+                vec3rot_point_um_achse_II (stlcmd::center_ges, foo, grad_to_rad(alpha), look_at);
+                vec3rot_point_um_achse_II (stlcmd::center_ges, foo, grad_to_rad(alpha), eye);
+            }
+            break;
+        case 101:           // top
+        case 103: {         // bottom
+                float foo[3], n[3], p[3], upp[3];
+                float alpha = (key == 103) ? 15.0f : -15.0f;
+                vec3sub (look_at, eye, n);
+                vec3Normalize (n);
+                vec3Normalize (up);
+                vec3Cross (up, n, foo);
+                vec3add (eye, up, upp);
+                vec3add (stlcmd::center_ges, foo, p);
+
+                vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(alpha), look_at);
+                vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(alpha), eye);
+                vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(alpha), upp);
+
+                vec3sub (upp, eye, up);
             }
             break;
     }
@@ -202,12 +242,18 @@ static void timer(int v)
     counter++;
 }
 
+/********************************************************************
+ * @brief   int main(int argc, char **argv) 
+ */
 int main(int argc, char **argv) 
 {
     help();
     glutInit(&argc, argv);
-    // src_w = glutGet ( GLUT_SCREEN_WIDTH );
-    // src_h = glutGet ( GLUT_SCREEN_HEIGHT );
+
+#ifdef USE_FULL_SCREEN    
+    src_w = glutGet ( GLUT_SCREEN_WIDTH );
+    src_h = glutGet ( GLUT_SCREEN_HEIGHT );
+#endif
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(0,0);
     glutInitWindowSize (src_w, src_h);
@@ -222,6 +268,8 @@ int main(int argc, char **argv)
     glutReshapeFunc(glutResize);
 
     glutKeyboardFunc ( keyboard );
+    glutSpecialFunc ( specialkey );
+    cout << "OpenGL Version= " << glGetString(GL_VERSION) << endl;
 
     init_scene();
     stlcmd::init_stlcmd();

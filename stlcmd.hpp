@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.5
+ * @version v0.0.6
  * @date 2021-09-12
  */
 
@@ -54,7 +54,7 @@ struct _vertex_ {
 
 class stlcmd {
 public:
-    enum {draw_tringle = 0x01, draw_line = 0x02, draw_point = 0x04};
+    enum {draw_triangle = 0x01, draw_line = 0x02, draw_point = 0x04};
 
     stlcmd (string filename);
     ~stlcmd ();
@@ -85,7 +85,7 @@ private:
     uint32_t id;    
     string filename;
     bool init_by_new;
-    uint8_t draw_mode = draw_line;
+    uint8_t draw_mode = draw_triangle | draw_line;
 
     std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle, point
     std::vector <struct _vertex_> stlline;  // vertex buffer for line
@@ -200,21 +200,18 @@ void stlcmd::set_color (float *c)
     vec4copy (c, col);
 
     if (vboID[0] != 0) {
-    for (size_t i=0; i<stlvec.size(); i++) 
-        vec4copy (c, stlvec[i].c);
-
-    glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO
-    glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+        for (size_t i=0; i<stlvec.size(); i++) 
+            vec4copy (c, stlvec[i].c);
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
     }
 
-    /*
     if (vboID[1] != 0) {
         for (size_t i=0; i<stlline.size(); i++)
             vec4copy (c, stlline[i].c);
-        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);       // VBO
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);       // VBO 1
         glBufferData(GL_ARRAY_BUFFER, stlline.size() *sizeof(struct _vertex_), stlline.data(), GL_STATIC_DRAW);        
     }
-    */
 }
 
 /**********************************************************
@@ -233,8 +230,8 @@ stlcmd::~stlcmd ()
     free (stl_m);
 }
 
-/*********************************************************
- * @brief 
+/****************************************************************
+ * @brief   static void *stlcmd::operator new (std::size_t size)
  */
 void *stlcmd::operator new (std::size_t size)
 {
@@ -243,7 +240,7 @@ void *stlcmd::operator new (std::size_t size)
 }
 
 /********************************************************
- * @brief 
+ * @brief   static void stlcmd::clear_allstl()
  */
 void stlcmd::clear_allstl()
 {
@@ -265,10 +262,12 @@ void stlcmd::display ()
 
     glMultMatrixf ( stl_m );                // MODELVIEW mit Bauteil-Matrix (stl_m)  multiplizieren 
 
-    if (draw_mode & draw_tringle) {
+    // ---------------- draw triangle --------------------
+    if (draw_mode & draw_triangle) {
         glBindVertexArray(vaoID[0]);             // bind pyramid VAO
         glDrawArrays(GL_TRIANGLES, 0, stlvec.size());   // render data
     }
+    // ---------------- draw line --------------------
     if (draw_mode & draw_line) {
         glBindVertexArray(vaoID[1]);             // bind pyramid VAO
         glDisable (GL_LIGHTING);
@@ -276,6 +275,7 @@ void stlcmd::display ()
         glDrawArrays(GL_LINES, 0, stlline.size());   // render data
         glEnable (GL_LIGHTING);
     }
+    // ---------------- draw point --------------------
     if (draw_mode & draw_point) {
         glBindVertexArray(vaoID[0]);             // bind pyramid VAO
         glDisable (GL_LIGHTING);
