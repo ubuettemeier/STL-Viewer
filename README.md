@@ -1,7 +1,7 @@
-# STL-Viewer
+## STL-Viewer
 simple STL File Viewer
+<p>usage: stlviewer file, ...
 
-usage: stlviewer file, ...
-
-exampl: stlviewer STL_data/baby-tux_bin.STL
+example: stlviewer STL_data/baby-tux_bin.STL</p>
+<hr></hr>
 

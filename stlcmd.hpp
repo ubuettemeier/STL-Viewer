@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.3
+ * @version v0.0.4
  * @date 2021-09-12
  */
 
@@ -54,12 +54,16 @@ struct _vertex_ {
 
 class stlcmd {
 public:
+    enum {draw_tringle = 0x01, draw_line = 0x02, draw_point = 0x04};
+
     stlcmd (string filename);
     ~stlcmd ();
     stlcmd(stlcmd&) = delete;               // Kopierkonstruktor unterbinden
     void operator=(stlcmd&) = delete;       // Zuweisungsoperator verbieten
 
     void display ();
+    void set_draw_mode (uint8_t mode);
+    uint8_t get_draw_mode ();
 
     static void *operator new (std::size_t size);
     static vector<stlcmd *> allstl;
@@ -76,12 +80,15 @@ private:
     void calc_max_r();
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
     void set_color (float *c);
+    void make_line_vertex();
 
     uint32_t id;    
     string filename;
     bool init_by_new;
+    uint8_t draw_mode = draw_line;
 
-    vector <struct _vertex_> stlvec;
+    std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle
+    std::vector <struct _vertex_> stlline;  // vertex buffer for line
     float *col = MEM(4);
     float *center = MEM(3);
     float *min = MEM(3);
@@ -127,18 +134,39 @@ stlcmd::stlcmd (string fname)
     vec3set (0.0f, 0.0f, 0.0f, center);
 
     if (read_stl(filename)) {
-        get_min_max_center();
+        get_min_max_center ();
         set_color ( col );
+        make_line_vertex ();
 
         glGenVertexArrays(ANZ_OBJ, vaoID);  // create the Vertex Array Objects
         glGenBuffers(ANZ_OBJ, vboID);       // generating Vertex Buffer Objects (VBO)
 
+        // ------------------- Triangles auf VAO 0 --------------------------
         glBindVertexArray(vaoID[0]);                    // VAO 0
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);        // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
 
         int stride = sizeof(struct _vertex_);           // int stride = sizeof(Vertex);
         char *offset = (char*)NULL;
+
+        glVertexPointer(3, GL_FLOAT, stride, offset);   // position  3*float
+        glEnableClientState(GL_VERTEX_ARRAY);
+        
+        offset = (char*)NULL + 3*sizeof(float);
+        glNormalPointer (GL_FLOAT, stride, offset);     // normal
+        glEnableClientState(GL_NORMAL_ARRAY);
+
+        offset = (char*)NULL + 6*sizeof(float);         // color
+        glColorPointer(4, GL_FLOAT, stride, offset);    // 4*float
+        glEnableClientState(GL_COLOR_ARRAY);
+
+        // ------------------- Linien auf VAO 1 --------------------------
+        glBindVertexArray(vaoID[1]);                    // VAO 1
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);        // VBO 1
+        glBufferData(GL_ARRAY_BUFFER, stlline.size() *sizeof(struct _vertex_), stlline.data(), GL_STATIC_DRAW);
+
+        stride = sizeof(struct _vertex_);           // int stride = sizeof(Vertex);
+        offset = (char*)NULL;
 
         glVertexPointer(3, GL_FLOAT, stride, offset);   // position  3*float
         glEnableClientState(GL_VERTEX_ARRAY);
@@ -235,11 +263,35 @@ void stlcmd::display ()
     glPushMatrix();                         // MODELVIEW sichern
 
     glMultMatrixf ( stl_m );                // MODELVIEW mit Bauteil-Matrix (stl_m)  multiplizieren 
-    
-    glBindVertexArray(vaoID[0]);             // bind pyramid VAO
-    glDrawArrays(GL_TRIANGLES, 0, stlvec.size());   // render data
 
+    if (draw_mode & draw_tringle) {
+        glBindVertexArray(vaoID[0]);             // bind pyramid VAO
+        glDrawArrays(GL_TRIANGLES, 0, stlvec.size());   // render data
+    }
+    if (draw_mode & draw_line) {
+        glBindVertexArray(vaoID[1]);             // bind pyramid VAO
+        glDisable (GL_LIGHTING);
+        glLineWidth (1);
+        glDrawArrays(GL_LINES, 0, stlline.size());   // render data
+        glEnable (GL_LIGHTING);
+    }
     glPopMatrix();                          // MODELVIEW zurück
+}
+
+/*************************************************************
+ * @brief   uint8_t stlcmd::get_draw_mode ()
+ */
+uint8_t stlcmd::get_draw_mode ()
+{
+    return draw_mode;
+}
+
+/***************************************************************
+ * @brief   void stlcmd::set_draw_mode (uint8_t mode)
+ */
+void stlcmd::set_draw_mode (uint8_t mode)
+{
+    draw_mode = mode;
 }
 
 /***********************************************************
@@ -479,6 +531,23 @@ void stlcmd::init_stlcmd()
     vec3set (-1, -1, -1, min_ges);
     vec3set (1, 1, 1, max_ges);
     vec3set (0, 0, 0, center_ges);
+}
+
+/******************************************************************
+ * @brief   void stlcmd::make_line_vertex()
+ */
+void stlcmd::make_line_vertex()
+{
+    for (size_t i=0; i<stlvec.size(); i+=3) {
+       stlline.push_back (stlvec[i]);
+       stlline.push_back (stlvec[i+1]);
+
+       stlline.push_back (stlvec[i+1]);
+       stlline.push_back (stlvec[i+2]);
+
+       stlline.push_back (stlvec[i+2]);
+       stlline.push_back (stlvec[i]);
+    }
 }
 
 #endif

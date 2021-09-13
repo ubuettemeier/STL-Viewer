@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.3
+ * @version v0.0.4
  * @date 2021-09-12
  */
 
@@ -39,7 +39,10 @@ void help()
 {
     cout << "Usage: stlviewer file, ...\n";
     cout << "Example: stlviewer STL_data/baby-tux_bin.STL\n";
-
+    cout << "+ : Zoom +\n";
+    cout << "- : Zoom -\n";
+    cout << "t : draw triangle ON/OFF\n";
+    cout << "l : draw line ON/OFF\n";
     cout << "\n";
 }
 
@@ -156,6 +159,30 @@ void keyboard( unsigned char key, int x, int y)
             stlcmd::clear_allstl();         // clear all stl-data
             glutDestroyWindow(glutGetWindow ());
             break;
+        case '-':
+        case '+': {
+            float r[3];     // Richtung
+            vec3sub (look_at, eye, r);
+            vec3Normalize (r);
+            float faktor = (key=='+') ? 20.0f : -20.0f;
+            vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
+            vec3add (eye, r, eye);
+            vec3add (look_at, r, look_at);
+            }
+            break;
+        case 't':
+        case 'l':
+            for (size_t i=0; i<stlcmd::allstl.size(); i++) {
+                uint8_t akt_mode = stlcmd::allstl[i]->get_draw_mode();
+                uint8_t mode = (key=='t') ? stlcmd::draw_tringle : stlcmd::draw_line;
+
+                (akt_mode & mode) ? akt_mode &= ~mode : akt_mode |= mode;
+                if (akt_mode == 0)
+                    akt_mode = stlcmd::draw_tringle;
+
+                stlcmd::allstl[i]->set_draw_mode ( akt_mode );
+            }
+            break;
     }
 }
 
@@ -164,12 +191,11 @@ void keyboard( unsigned char key, int x, int y)
  */
 static void timer(int v) 
 {
-  static uint8_t counter = 0;
+    static uint8_t counter = 0;
 
-  glutDisplay();
-  glutTimerFunc(unsigned(20), timer, ++v);
-
-  counter++;
+    glutDisplay();
+    glutTimerFunc(unsigned(20), timer, ++v);    // trigger timer
+    counter++;
 }
 
 int main(int argc, char **argv) 
