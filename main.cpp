@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.4
+ * @version v0.0.5
  * @date 2021-09-12
  */
 
@@ -172,9 +172,13 @@ void keyboard( unsigned char key, int x, int y)
             break;
         case 't':
         case 'l':
+        case 'p':
             for (size_t i=0; i<stlcmd::allstl.size(); i++) {
                 uint8_t akt_mode = stlcmd::allstl[i]->get_draw_mode();
-                uint8_t mode = (key=='t') ? stlcmd::draw_tringle : stlcmd::draw_line;
+                uint8_t mode; //  = (key=='t') ? stlcmd::draw_tringle : stlcmd::draw_line;
+                if (key == 't') mode = stlcmd::draw_tringle;
+                if (key == 'l') mode = stlcmd::draw_line;
+                if (key == 'p') mode = stlcmd::draw_point;
 
                 (akt_mode & mode) ? akt_mode &= ~mode : akt_mode |= mode;
                 if (akt_mode == 0)

@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.4
+ * @version v0.0.5
  * @date 2021-09-12
  */
 
@@ -11,7 +11,7 @@
 #define SHOW_CONTROL_TEXT_
 
 #define MEM(x) ((float*) malloc (sizeof(float)*(x)))
-#define ANZ_OBJ 2
+#define ANZ_OBJ 3
 
 #include <iostream>
 #include <vector>
@@ -87,16 +87,17 @@ private:
     bool init_by_new;
     uint8_t draw_mode = draw_line;
 
-    std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle
+    std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle, point
     std::vector <struct _vertex_> stlline;  // vertex buffer for line
+    
     float *col = MEM(4);
     float *center = MEM(3);
     float *min = MEM(3);
     float *max = MEM(3);
     float *stl_m = MEM(16);
 
-    GLuint vaoID[ANZ_OBJ] = {0, 0};    // VAO einrichten
-    GLuint vboID[ANZ_OBJ] = {0, 0};    // VBO einrichten
+    GLuint vaoID[ANZ_OBJ] = {0, 0, 0};    // VAO einrichten; triangle, line, ???
+    GLuint vboID[ANZ_OBJ] = {0, 0, 0};    // VBO einrichten; triangle, line, ???
 
     // ------------ static's ------------------------
     static uint32_t id_counter;         // used for <id>
@@ -141,7 +142,7 @@ stlcmd::stlcmd (string fname)
         glGenVertexArrays(ANZ_OBJ, vaoID);  // create the Vertex Array Objects
         glGenBuffers(ANZ_OBJ, vboID);       // generating Vertex Buffer Objects (VBO)
 
-        // ------------------- Triangles auf VAO 0 --------------------------
+        // ------------------- Triangles, Points auf VAO 0 --------------------------
         glBindVertexArray(vaoID[0]);                    // VAO 0
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);        // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
@@ -273,6 +274,13 @@ void stlcmd::display ()
         glDisable (GL_LIGHTING);
         glLineWidth (1);
         glDrawArrays(GL_LINES, 0, stlline.size());   // render data
+        glEnable (GL_LIGHTING);
+    }
+    if (draw_mode & draw_point) {
+        glBindVertexArray(vaoID[0]);             // bind pyramid VAO
+        glDisable (GL_LIGHTING);
+        glPointSize (5);
+        glDrawArrays(GL_POINTS, 0, stlvec.size());   // render data
         glEnable (GL_LIGHTING);
     }
     glPopMatrix();                          // MODELVIEW zurück
