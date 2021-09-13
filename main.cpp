@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.2
+ * @version v0.0.3
  * @date 2021-09-12
  */
 
@@ -25,6 +25,7 @@ float fovy = 60.0f;
 
 // ----------- Prototypen -----------------
 void help(void);
+void set_cam_to_center ( void );
 void init_scene();
 static void glutResize (int w, int h);
 static void glutDisplay ();
@@ -40,6 +41,20 @@ void help()
     cout << "Example: stlviewer STL_data/baby-tux_bin.STL\n";
 
     cout << "\n";
+}
+
+/*******************************************************************
+ * @brief Set the cam to center object
+ */
+void set_cam_to_center()
+{
+    float n[3] {0, 0, 1};
+    
+    float dist = stlcmd::obj_radius / tan(grad_to_rad(fovy/2.0f));
+
+    vec3set (0, 1, 0, up);
+    vec3add_vec_mul_fakt (stlcmd::center_ges, n, dist, eye);
+    vec3add_vec_mul_fakt (eye, n, -1, look_at);
 }
 
 /*********************************************************************************************
@@ -179,9 +194,15 @@ int main(int argc, char **argv)
     glutKeyboardFunc ( keyboard );
 
     init_scene();
+    stlcmd::init_stlcmd();
 
     for (int i=1; i<argc; i++) 
         new stlcmd( argv[i] );      // read stl-data
+
+    vec3print_vec ("min ges: ", stlcmd::min_ges);
+    vec3print_vec ("max ges: ", stlcmd::max_ges);
+    vec3print_vec ("center ges: ", stlcmd::center_ges);
+    set_cam_to_center();
 
     glutTimerFunc(unsigned(20), timer, 0);
     glutMainLoop();

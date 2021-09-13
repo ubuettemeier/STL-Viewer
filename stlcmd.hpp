@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.2
+ * @version v0.0.3
  * @date 2021-09-12
  */
 
@@ -12,8 +12,6 @@
 
 #define MEM(x) ((float*) malloc (sizeof(float)*(x)))
 #define ANZ_OBJ 2
-#define MAX_FLOAT 3.402823466e+30
-#define MIN_FLOAT 1.175494351e-30
 
 #include <iostream>
 #include <vector>
@@ -65,6 +63,7 @@ public:
 
     static void *operator new (std::size_t size);
     static vector<stlcmd *> allstl;
+    static void init_stlcmd();
     static void clear_allstl();
 
 private:
@@ -74,6 +73,7 @@ private:
     bool read_bin_stl (std::string fname);
     void move_bin_stl_to_stlvec (struct _stl_bin_triangle_ stb);
     void get_min_max_center();
+    void calc_max_r();
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
     void set_color (float *c);
 
@@ -94,14 +94,18 @@ private:
     // ------------ static's ------------------------
     static uint32_t id_counter;         // used for <id>
     static bool use_new;                // true: new stlcmd("xxx"); false: stlcmd a("xxx");
+public:    
     static float *center_ges;
-    static float *min_ges, *max_ges;
+    static float *min_ges;
+    static float *max_ges;
+    static float obj_radius;
 };
 
 // ---------- init static's ----------------
 float *stlcmd::center_ges = MEM(3);
-float *stlcmd::min_ges = MEM(3);
+float *stlcmd::min_ges = MEM(3); 
 float *stlcmd::max_ges = MEM(3);
+float stlcmd::obj_radius = 1.0f;
 
 bool stlcmd::use_new = false;
 uint32_t stlcmd::id_counter = 0;
@@ -155,7 +159,7 @@ stlcmd::stlcmd (string fname)
 #endif
 
     allstl.push_back ( this );      // mit new angelegte Daten merken!
-    // get_min_max_center_ges();
+    get_min_max_center_ges();
     use_new = false;
 }
 
@@ -434,6 +438,16 @@ void stlcmd::get_min_max_center()
     vec3print_vec ("center: ", center);
 }
 
+/****************************************************************
+ * @brief   void stlcmd::calc_max_r()
+ */
+void stlcmd::calc_max_r()
+{
+    float foo[3];
+    vec3sub (max_ges, center_ges, foo);
+    stlcmd::obj_radius = vec3bertag (foo);
+}
+
 /*********************************************************
  * @brief   void stlcmd::get_min_max_center_ges()
  */
@@ -446,12 +460,25 @@ void stlcmd::get_min_max_center_ges()      // berechnet den Gesamt Schwerpunkt.
         for (int j=0; j<3; j++) {
             if (allstl[i]->min[j] < min_ges[j])
                 min_ges[j] = allstl[i]->min[j];
-            if (allstl[i]->max[j] < max_ges[j])
+            if (allstl[i]->max[j] > max_ges[j])
                 max_ges[j] = allstl[i]->max[j];
         }
     }
 
     for (int k=0; k<3; k++) 
         center_ges[k] = (min_ges[k] + max_ges[k]) / 2.0f;
+
+    calc_max_r();
 }
+
+/*******************************************************************
+ * @brief   static void stlcmd::init_stlcmd()
+ */
+void stlcmd::init_stlcmd()
+{
+    vec3set (-1, -1, -1, min_ges);
+    vec3set (1, 1, 1, max_ges);
+    vec3set (0, 0, 0, center_ges);
+}
+
 #endif
