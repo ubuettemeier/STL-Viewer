@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.9
+ * @version v0.0.11
  * @date 2021-09-12
  */
 
@@ -19,12 +19,16 @@ using namespace std;
 
 int src_w=500, src_h=500;
 
-float eye[3] = {0.0, 0.0, 3.0f};
+float eye[3] = {0.0, 0.0, 3.0f};        // camera Position
 float look_at[3] = {0.0, 0.0, 0.0};
 float up[3] = {0, 1, 0};
+float fovy = 60.0f;                     // camera Öffnungswinkel
 
-float fovy = 60.0f;
 bool strg_key = 0, shift = 0;
+bool button_0_down = 0;                 // mouse left button
+int last_mx=-1, last_my=-1;
+
+uint8_t system_is_going_down = 0;   // look at timer(), keyboard()
 
 // ----------- Prototypen -----------------
 void help(void);
@@ -37,6 +41,7 @@ void keyboard ( unsigned char key, int x, int y);
 void specialkey( int key, int x, int y);
 void key_up (int key, int x, int y);
 void mouse_func (int button, int state, int x, int y);
+void mouse_move (int x, int y);
 
 static void timer (int v);
 
@@ -47,11 +52,12 @@ void help()
 {
     cout << "Usage: stlviewer file, ...\n";
     cout << "Example: stlviewer STL_data/baby-tux_bin.STL\n";
-    cout << "+ : Zoom +\n";
-    cout << "- : Zoom -\n";
+    // cout << "+ : Zoom +\n";
+    // cout << "- : Zoom -\n";
     cout << "t : draw triangle ON/OFF\n";
     cout << "l : draw line ON/OFF\n";
     cout << "p : draw point ON/OFF\n";
+    cout << "e : Model einpassen (fit in)\n";
     cout << "\n";
 }
 
@@ -165,6 +171,7 @@ void keyboard( unsigned char key, int x, int y)
 {
     switch (key) {
         case 27:            // ESC
+            system_is_going_down = 1;
             stlcmd::clear_allstl();         // clear all stl-data
             glutDestroyWindow(glutGetWindow ());
             break;
@@ -194,6 +201,15 @@ void keyboard( unsigned char key, int x, int y)
                     akt_mode = stlcmd::draw_triangle;
 
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
+            }
+            break;
+        case 'e': {     // Einpassen
+            float r[3];     // Richtung
+            float dist = stlcmd::obj_radius / tan(grad_to_rad(fovy/2.0f));
+            vec3sub (eye, look_at, r);
+            vec3Normalize (r);
+            vec3add_vec_mul_fakt (stlcmd::center_ges, r, dist, eye);
+            vec3add_vec_mul_fakt (eye, r, -1.0f, look_at);
             }
             break;
     }
@@ -287,19 +303,32 @@ void key_up (int key, int x, int y)
 void mouse_func (int button, int state, int x, int y)
 {
     switch (button) {
-        /*
-        case 0: {
-
+        case 0:     // button 0 
+            if ((button_0_down = (state == 0) ? 1 : 0)) {
+                last_mx = x, last_my = y;
             }
+            
+                
             break;
-        */
         case 3:     // wheel down
         case 4:     // wheel up
             keyboard ((button == 3) ? '-' : '+', 0, 0);
             break;
         default:
-            // cout << button << " | " << state << " | " << x << " | " << y << endl;
+            cout << button << " | " << state << " | " << x << " | " << y << endl;
             break;
+    }
+}
+
+/******************************************************************
+ * @brief   void mouse_move (int x, int y)
+ */
+void mouse_move (int x, int y)
+{
+    // cout << x << "|" << y << endl;
+    if (button_0_down) {
+        cout << "dx=" << x-last_mx << " dy=" << y-last_my << endl;
+
     }
 }
 
@@ -310,7 +339,8 @@ static void timer(int v)
 {
     static uint8_t counter = 0;
 
-    glutDisplay();
+    if (!system_is_going_down)
+        glutDisplay();
     glutTimerFunc(unsigned(20), timer, ++v);    // trigger timer
     counter++;
 }
@@ -344,6 +374,7 @@ int main(int argc, char **argv)
     glutSpecialFunc ( specialkey );
     glutSpecialUpFunc ( key_up );
     glutMouseFunc ( mouse_func );
+    glutMotionFunc ( mouse_move );
 
     cout << "OpenGL Version= " << glGetString(GL_VERSION) << endl;
 
