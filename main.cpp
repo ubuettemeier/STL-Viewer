@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.8
+ * @version v0.0.9
  * @date 2021-09-12
  */
 
@@ -36,6 +36,7 @@ static void glutDisplay ();
 void keyboard ( unsigned char key, int x, int y);
 void specialkey( int key, int x, int y);
 void key_up (int key, int x, int y);
+void mouse_func (int button, int state, int x, int y);
 
 static void timer (int v);
 
@@ -207,7 +208,7 @@ void specialkey( int key, int x, int y)
     switch (key) {
         case 100:           // rechts
         case 102:           // links
-            if (!strg_key) {        // rotation
+            if (!strg_key) {        // rotation cam
                 float foo[3];
                 float alpha = (key == 100) ? 15.0f : -15.0f;
                 if (shift)
@@ -216,7 +217,7 @@ void specialkey( int key, int x, int y)
                 vec3rot_point_um_achse_II (stlcmd::center_ges, foo, grad_to_rad(alpha), look_at);
                 vec3rot_point_um_achse_II (stlcmd::center_ges, foo, grad_to_rad(alpha), eye);
             }
-            if (strg_key) {     // move left right
+            if (strg_key) {     // move cam left right
                 float foo[3], n[3];
                 vec3sub (look_at, eye, foo);
                 vec3Normalize (foo);
@@ -230,7 +231,7 @@ void specialkey( int key, int x, int y)
             break;
         case 101:           // top
         case 103:           // bottom
-            if (!strg_key) {            // rotation
+            if (!strg_key) {            // rotation cam
                 float foo[3], n[3], p[3], upp[3];
                 float alpha = (key == 103) ? 15.0f : -15.0f;
                 if (shift)
@@ -248,7 +249,7 @@ void specialkey( int key, int x, int y)
 
                 vec3sub (upp, eye, up);
             }
-            if (strg_key) {         // move top down
+            if (strg_key) {         // move cam top down
                 float faktor = (key == 103) ? 20.0f : -20.0f;
                 vec3Normalize (up);
                 vec3add_vec_mul_fakt (eye, up, stlcmd::obj_radius / faktor, eye);
@@ -278,6 +279,28 @@ void key_up (int key, int x, int y)
             strg_key = 0;
             break;
   }
+}
+
+/*************************************************************************************
+ * @brief   void mouse_func (int button, int state, int x, int y)
+ */
+void mouse_func (int button, int state, int x, int y)
+{
+    switch (button) {
+        /*
+        case 0: {
+
+            }
+            break;
+        */
+        case 3:     // wheel down
+        case 4:     // wheel up
+            keyboard ((button == 3) ? '-' : '+', 0, 0);
+            break;
+        default:
+            // cout << button << " | " << state << " | " << x << " | " << y << endl;
+            break;
+    }
 }
 
 /******************************************************************
@@ -320,6 +343,8 @@ int main(int argc, char **argv)
     glutKeyboardFunc ( keyboard );
     glutSpecialFunc ( specialkey );
     glutSpecialUpFunc ( key_up );
+    glutMouseFunc ( mouse_func );
+
     cout << "OpenGL Version= " << glGetString(GL_VERSION) << endl;
 
     init_scene();
