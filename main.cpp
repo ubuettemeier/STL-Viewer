@@ -24,11 +24,11 @@ float look_at[3] = {0.0, 0.0, 0.0};
 float up[3] = {0, 1, 0};
 float fovy = 60.0f;                     // camera Öffnungswinkel
 
-float buf_eye[3], buf_look_at[3], buf_up[3], buf_n[3];
+float buf_eye[3], buf_look_at[3], buf_up[3];    // Wird in mouse_func() und mouse_move() benötigt !!!
 
 bool strg_key = 0, shift = 0;
 bool button_0_down = 0;                 // mouse left button
-int last_mx=-1, last_my=-1;
+int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move() benötigt !!!
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
@@ -53,8 +53,8 @@ static void timer (int v);
  */
 void help()
 {
-    cout << "Usage: stlviewer file, ...\n";
-    cout << "Example: stlviewer STL_data/baby-tux_bin.STL\n";
+    cout << "Usage:   ./stlviewer  file, ...\n";
+    cout << "Example: ./stlviewer  STL_data/baby-tux_bin.STL\n\n";
     cout << "t : draw triangle ON/OFF\n";
     cout << "l : draw line ON/OFF\n";
     cout << "p : draw point ON/OFF\n";
@@ -287,7 +287,7 @@ void specialkey( int key, int x, int y)
  */
 void key_up (int key, int x, int y) 
 {
-  // cout << key << endl;
+    // cout << key << endl;
     switch (key) {
         case 112:           // SHIFT
             shift = 0;
@@ -305,12 +305,12 @@ void mouse_func (int button, int state, int x, int y)
 {
     switch (button) {
         case 0:     // button 0 
-            if ((button_0_down = (state == 0) ? 1 : 0)) {
+            if ((button_0_down = (state == 0) ? 1 : 0)) {  // button down
                 last_mx = x, last_my = y;
-                vec3copy (eye, buf_eye);
+                vec3copy (eye, buf_eye);            // Cam-Pos sichern. Wird in mouse_move() benötigt !!!
                 vec3copy (look_at, buf_look_at);
                 vec3copy (up, buf_up);
-            } else {
+            } else {    // button up
                 // cout << "button up\n";
             }
             
@@ -321,7 +321,7 @@ void mouse_func (int button, int state, int x, int y)
             keyboard ((button == 3) ? '-' : '+', 0, 0);
             break;
         default:
-            cout << button << " | " << state << " | " << x << " | " << y << endl;
+            /**/ cout << button << " | " << state << " | " << x << " | " << y << endl;
             break;
     }
 }
@@ -351,8 +351,9 @@ void mouse_move (int x, int y)
         else     // dx == 0
             alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
 
-        cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
+        // cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
 
+        // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
         vec3copy (buf_eye, eye);
         vec3copy (buf_look_at, look_at);
         vec3copy (buf_up, up);
@@ -361,21 +362,22 @@ void mouse_move (int x, int y)
         vec3sub (look_at, eye, foo);
         vec3Normalize (foo);
         vec3Normalize (up);
-        vec3copy (up, n);
+        vec3copy (up, n);       // der up-Vector wird neue Rotationsachse n
 
-        vec3rot_point_um_achse (0, 0, 0,
+        vec3rot_point_um_achse (0, 0, 0,                    // neue Rotationsachse um Cam-Richtung foo[] drehen
                                 foo[0], foo[1], foo[2], 
                                 alpha, 
                                 n[0], n[1], n[2]);
 
-        vec3add (eye, up, upp);
-        vec3add (stlcmd::center_ges, n, p);
+        vec3add (eye, up, upp);                 // Endpunkt von up berechnen => upp = eye + up
+        vec3add (stlcmd::center_ges, n, p);     // Endpunkt Rotationsachse brechnen => p = center + n
 
-        vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), look_at);
+        // Cam um Rotationsachse (center[], p[]) drehen.
+        vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), look_at);    
         vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), eye);
         vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), upp);
 
-        vec3sub (upp, eye, up);
+        vec3sub (upp, eye, up); // up wider herstellen.
     }
 }
 

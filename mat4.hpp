@@ -69,7 +69,7 @@ bool vec3_equal (float *a, float *b);   // wie sicher ist die Funktion ??? Delta
 float grad_to_rad (float grad);         // return rad 
 float rad_to_grad (float rad);          // return grad
 
-float vec3dist_point_vec (float *p, float *a, float *r);  // g: a + x*t
+float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
 
 /// ---------------------------------------------------------------------------------------------
 void get_max_min (float *dat, uint32_t anz_ele, uint32_t offset, float *res)
@@ -483,10 +483,15 @@ float rad_to_grad (float rad)           // return grad
 
 /** -----------------------------------------------------------------------------
  * @brief Abstand Punkt / Gerade
- *        g: a + x*r 
+ *        g: a^ + x*r^ 
  *        https://de.serlo.org/mathe/2137/abstand-eines-punktes-zu-einer-geraden-berechnen-analytische-geometrie
+ * @param p: Punkt
+ * @param a: Startpunkt Gerade
+ * @param r: Richtungsvector der Geraden
+ * 
+ * @return  Normalabstand von p^ bis zur Gerade a^+x*r^
  */
-float vec3dist_point_vec (float *p, float *a, float *r)  // g: a + x*r
+float vec3dist_point_vec (float *p, float *a, float *r)  // g: a^ + x*r^
 {
   float ret = 0.0;
   float foo[3], kp[3];
@@ -498,7 +503,7 @@ float vec3dist_point_vec (float *p, float *a, float *r)  // g: a + x*r
   if (w != 0.0)
     ret = vec3bertag(kp) / w;
 
-  return ret;
+  return ret;   // Normalabstand
 }
 
 /***************************************************************************

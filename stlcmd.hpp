@@ -412,7 +412,7 @@ bool stlcmd::read_tex_stl (std::string fname)
         }
     }
     is.close();
-    cout << fname << ": " << stlvec.size() << " Dreiecke " << anz_tri << " triangles\n";
+    /**/ cout << fname << ": " << stlvec.size() << " Dreiecke " << anz_tri << " triangles\n";
 
     return true;
 }
@@ -440,7 +440,7 @@ bool stlcmd::read_bin_stl (std::string fname)
                         ist_tri++;
                     }
                 }
-                cout << fname << ": " << stlvec.size() << " vertexe " << anz_tri << " triangles\n";
+                /**/ cout << fname << ": " << stlvec.size() << " vertexe " << anz_tri << " triangles\n";
                 if (ist_tri == anz_tri)
                     ret = true;
             }
@@ -493,6 +493,7 @@ void stlcmd::get_min_max_center()
             center[k] = (min[k] + max[k]) / 2.0f;
     }
 
+    /**/
     vec3print_vec ("min: ", min);
     vec3print_vec ("max: ", max);
     vec3print_vec ("center: ", center);
