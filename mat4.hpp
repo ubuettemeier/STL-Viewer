@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.2
+ * @version v0.0.3
  * @date 2021-08-26
  */
 
@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <math.h>
+#include <cstring>
 
 using namespace std;
 

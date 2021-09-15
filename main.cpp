@@ -1,8 +1,7 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @brief 
- * @version v0.0.12
+ * @version v0.0.14
  * @date 2021-09-12
  */
 
@@ -13,9 +12,12 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+#include "basicelement.hpp"
 #include "stlcmd.hpp"
 
 using namespace std;
+
+basics *basic;  // Ursprung
 
 int src_w=500, src_h=500;
 
@@ -33,7 +35,8 @@ int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move()
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
 // ----------- Prototypen -----------------
-void help(void);
+void help();
+void show_special_keys();
 void fit_in ();                         // Modell einpassen; up[] bleibt unverändert.
 void init_scene();
 static void glutResize (int w, int h);
@@ -55,12 +58,23 @@ void help()
 {
     cout << "Usage:   ./stlviewer  file, ...\n";
     cout << "Example: ./stlviewer  STL_data/baby-tux_bin.STL\n\n";
+    cout << "h : this message\n";
+    cout << "s : show special key's\n";
     cout << "t : draw triangle ON/OFF\n";
     cout << "l : draw line ON/OFF\n";
     cout << "p : draw point ON/OFF\n";
     cout << "e : Model einpassen (fit in)\n";
     cout << "v : Vorderansicht\n";
     cout << "\n";
+}
+
+/***************************************************************
+ * @brief   void show_special_keys()
+ */
+void show_special_keys()
+{
+    cout << "+ : zoom plus\n";
+    cout << "- : zoom minus\n";
 }
 
 /******************************************************************
@@ -158,6 +172,8 @@ static void glutDisplay()
                 look_at[0], look_at[1], look_at[2],     // center
                 up[0], up[1], up[2] );                  // up
 
+    basic->display();
+
     for (size_t i=0; i<stlcmd::allstl.size(); i++) 
         stlcmd::allstl[i]->display();
 
@@ -174,7 +190,14 @@ void keyboard( unsigned char key, int x, int y)
         case 27:            // ESC
             system_is_going_down = 1;
             stlcmd::clear_allstl();         // clear all stl-data
+            delete basic;
             glutDestroyWindow(glutGetWindow ());
+            break;
+        case 'h':
+            help();
+            break;
+        case 's':
+            show_special_keys();
             break;
         case '-':           // zoom kleiner
         case '+': {         // zoom größer
@@ -386,6 +409,24 @@ void mouse_move (int x, int y)
  */
 void passive_mouse_move (int x, int y)
 {
+    float zbuf_tiefe;
+    int y_new = src_h - y -1;
+
+    glReadPixels( x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuf_tiefe);     // Achtung: Y-Ursprung muß nach bottom gelegt werden !!!
+
+    int viewport[4];
+    double modelview[16];
+    double projection[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview); //recuperer matrices
+    glGetDoublev(GL_PROJECTION_MATRIX, projection); //recuperer matrices
+    glGetIntegerv(GL_VIEWPORT, viewport);//viewport
+
+    double u, v, w;
+	gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
+    if (zbuf_tiefe != 1) {
+        // cout << u << "|" << v << "|" << w << endl;
+    }
+
     // cout << "passive_mouse_move " << x << "|" << y << endl;
 }
 
@@ -442,9 +483,12 @@ int main(int argc, char **argv)
     for (int i=1; i<argc; i++) 
         new stlcmd( argv[i] );      // read stl-data
 
+    basic = new basics(stlcmd::obj_radius * 0.5f);
+
     vec3print_vec ("min ges: ", stlcmd::min_ges);
     vec3print_vec ("max ges: ", stlcmd::max_ges);
     vec3print_vec ("center ges: ", stlcmd::center_ges);
+    cout << "R: " << stlcmd::obj_radius << endl;
     fit_in();                       // Modell einpassen
 
     glutTimerFunc(unsigned(20), timer, 0);

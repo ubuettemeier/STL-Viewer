@@ -13,6 +13,7 @@ SOURCE = $(FILENAME).cpp
 HEADER = stlcmd.hpp
 HEADER += utilities.hpp
 HEADER += mat4.hpp
+HEADER += basicelement.hpp
 
 OBJ = $(FILENAME).o
 BIN = $(BUILDFILE)

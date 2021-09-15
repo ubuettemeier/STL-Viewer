@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.6
+ * @version v0.0.8
  * @date 2021-09-12
  */
 
@@ -22,6 +22,7 @@
 #include <GL/glew.h>
 #include <GL/glut.h>
 
+#include "stldev.h"
 #include "utilities.hpp"
 #include "mat4.hpp"
 
@@ -34,23 +35,6 @@ using namespace std;
 //!
 //!         struct _stl_bin_triangle_   - Triangle Struktur
 //! ----------------------------------------------------------
-#pragma pack(1)
-
-struct _stl_bin_triangle_ {
-    float n[3];
-    float p0[3];
-    float p1[3];
-    float p2[3];
-    uint16_t attribute;
-};
-
-struct _vertex_ {
-    float v[3];
-    float n[3];
-    float c[4];
-};
-
-#pragma pack()
 
 class stlcmd {
 public:
@@ -493,10 +477,9 @@ void stlcmd::get_min_max_center()
             center[k] = (min[k] + max[k]) / 2.0f;
     }
 
-    /**/
-    vec3print_vec ("min: ", min);
-    vec3print_vec ("max: ", max);
-    vec3print_vec ("center: ", center);
+    /**/ vec3print_vec ("min: ", min);
+    /**/ vec3print_vec ("max: ", max);
+    /**/ vec3print_vec ("center: ", center);
 }
 
 /****************************************************************
