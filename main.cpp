@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.14
+ * @version v0.0.15
  * @date 2021-09-12
  */
 
@@ -24,7 +24,7 @@ int src_w=500, src_h=500;
 float eye[3] = {0.0, 0.0, 1.0f};        // camera Position
 float look_at[3] = {0.0, 0.0, 0.0};
 float up[3] = {0, 1, 0};
-float fovy = 60.0f;                     // camera Öffnungswinkel
+float fovy = 10.0f;                     // camera Öffnungswinkel
 
 float buf_eye[3], buf_look_at[3], buf_up[3];    // Wird in mouse_func() und mouse_move() benötigt !!!
 
@@ -204,7 +204,7 @@ void keyboard( unsigned char key, int x, int y)
             float r[3];     // Richtung
             vec3sub (look_at, eye, r);
             vec3Normalize (r);
-            float faktor = (key=='+') ? 20.0f : -20.0f;
+            float faktor = (key=='+') ? 5.0f : -5.0f;
             vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
             vec3add (eye, r, eye);
             vec3add (look_at, r, look_at);
@@ -221,9 +221,10 @@ void keyboard( unsigned char key, int x, int y)
                 if (key == 'p') mode = stlcmd::draw_point;
 
                 (akt_mode & mode) ? akt_mode &= ~mode : akt_mode |= mode;
+                /*
                 if (akt_mode == 0)
                     akt_mode = stlcmd::draw_triangle;
-
+                */
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
             }
             break;
@@ -484,6 +485,7 @@ int main(int argc, char **argv)
         new stlcmd( argv[i] );      // read stl-data
 
     basic = new basics(stlcmd::obj_radius * 0.5f);
+    basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
 
     vec3print_vec ("min ges: ", stlcmd::min_ges);
     vec3print_vec ("max ges: ", stlcmd::max_ges);

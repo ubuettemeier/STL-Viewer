@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.8
+ * @version v0.0.9
  * @date 2021-09-12
  */
 
@@ -97,7 +97,7 @@ public:
 float *stlcmd::center_ges = MEM(3);
 float *stlcmd::min_ges = MEM(3); 
 float *stlcmd::max_ges = MEM(3);
-float stlcmd::obj_radius = 1.0f;
+float stlcmd::obj_radius = sqrt(2.0f);
 
 bool stlcmd::use_new = false;
 uint32_t stlcmd::id_counter = 0;
