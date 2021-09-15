@@ -2,7 +2,7 @@
  * @file main.cpp
  * @author Ulrich Buettemeier
  * @brief 
- * @version v0.0.11
+ * @version v0.0.12
  * @date 2021-09-12
  */
 
@@ -19,20 +19,22 @@ using namespace std;
 
 int src_w=500, src_h=500;
 
-float eye[3] = {0.0, 0.0, 3.0f};        // camera Position
+float eye[3] = {0.0, 0.0, 1.0f};        // camera Position
 float look_at[3] = {0.0, 0.0, 0.0};
 float up[3] = {0, 1, 0};
 float fovy = 60.0f;                     // camera Öffnungswinkel
+
+float buf_eye[3], buf_look_at[3], buf_up[3], buf_n[3];
 
 bool strg_key = 0, shift = 0;
 bool button_0_down = 0;                 // mouse left button
 int last_mx=-1, last_my=-1;
 
-uint8_t system_is_going_down = 0;   // look at timer(), keyboard()
+uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
 // ----------- Prototypen -----------------
 void help(void);
-void set_cam_to_center ( void );
+void fit_in ();                         // Modell einpassen; up[] bleibt unverändert.
 void init_scene();
 static void glutResize (int w, int h);
 static void glutDisplay ();
@@ -42,6 +44,7 @@ void specialkey( int key, int x, int y);
 void key_up (int key, int x, int y);
 void mouse_func (int button, int state, int x, int y);
 void mouse_move (int x, int y);
+void passive_mouse_move (int x, int y);
 
 static void timer (int v);
 
@@ -52,27 +55,25 @@ void help()
 {
     cout << "Usage: stlviewer file, ...\n";
     cout << "Example: stlviewer STL_data/baby-tux_bin.STL\n";
-    // cout << "+ : Zoom +\n";
-    // cout << "- : Zoom -\n";
     cout << "t : draw triangle ON/OFF\n";
     cout << "l : draw line ON/OFF\n";
     cout << "p : draw point ON/OFF\n";
     cout << "e : Model einpassen (fit in)\n";
+    cout << "v : Vorderansicht\n";
     cout << "\n";
 }
 
-/*******************************************************************
- * @brief Set the cam to center object
+/******************************************************************
+ * @brief   void fit_in ()  // Modell einpassen
  */
-void set_cam_to_center()
+void fit_in ()
 {
-    float n[3] {0, 0, 1};
-    
+    float r[3];     // Richtung
     float dist = stlcmd::obj_radius / tan(grad_to_rad(fovy/2.0f));
-
-    vec3set (0, 1, 0, up);
-    vec3add_vec_mul_fakt (stlcmd::center_ges, n, dist, eye);
-    vec3add_vec_mul_fakt (eye, n, -1, look_at);
+    vec3sub (eye, look_at, r);
+    vec3Normalize (r);
+    vec3add_vec_mul_fakt (stlcmd::center_ges, r, dist, eye);
+    vec3add_vec_mul_fakt (eye, r, -1.0f, look_at);
 }
 
 /*********************************************************************************************
@@ -203,14 +204,14 @@ void keyboard( unsigned char key, int x, int y)
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
             }
             break;
-        case 'e': {     // Einpassen
-            float r[3];     // Richtung
-            float dist = stlcmd::obj_radius / tan(grad_to_rad(fovy/2.0f));
-            vec3sub (eye, look_at, r);
-            vec3Normalize (r);
-            vec3add_vec_mul_fakt (stlcmd::center_ges, r, dist, eye);
-            vec3add_vec_mul_fakt (eye, r, -1.0f, look_at);
-            }
+        case 'e':      // Einpassen (fit in) up[] bleibt unverändert.
+            fit_in();
+            break;
+        case 'v':       // Vorderansicht XY
+            vec3set (0.0, 0.0, 1.0f, eye);
+            vec3set (0.0, 0.0, 0.0, look_at);
+            vec3set (0, 1, 0, up);
+            fit_in();
             break;
     }
 }
@@ -306,6 +307,11 @@ void mouse_func (int button, int state, int x, int y)
         case 0:     // button 0 
             if ((button_0_down = (state == 0) ? 1 : 0)) {
                 last_mx = x, last_my = y;
+                vec3copy (eye, buf_eye);
+                vec3copy (look_at, buf_look_at);
+                vec3copy (up, buf_up);
+            } else {
+                // cout << "button up\n";
             }
             
                 
@@ -325,11 +331,60 @@ void mouse_func (int button, int state, int x, int y)
  */
 void mouse_move (int x, int y)
 {
+    static float alpha = 0.0f;      // in [rad]
+    static float dist = 0.0f;
+
     // cout << x << "|" << y << endl;
     if (button_0_down) {
-        cout << "dx=" << x-last_mx << " dy=" << y-last_my << endl;
+        int dx = x - last_mx;
+        int dy = y - last_my;
+        dist = sqrt(dx*dx + dy*dy);
 
+        if (dx != 0) {
+            alpha = atanf ((float)dy / (float)dx);
+            if (dy >= 0) {
+                if (dx < 0)
+                    alpha += M_PI;
+            } else      // dy < 0
+                alpha = (dx < 0) ? alpha+M_PI : 2.0f*M_PI+alpha;
+        }
+        else     // dx == 0
+            alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
+
+        cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
+
+        vec3copy (buf_eye, eye);
+        vec3copy (buf_look_at, look_at);
+        vec3copy (buf_up, up);
+
+        float n[3], foo[3], p[3], upp[3];
+        vec3sub (look_at, eye, foo);
+        vec3Normalize (foo);
+        vec3Normalize (up);
+        vec3copy (up, n);
+
+        vec3rot_point_um_achse (0, 0, 0,
+                                foo[0], foo[1], foo[2], 
+                                alpha, 
+                                n[0], n[1], n[2]);
+
+        vec3add (eye, up, upp);
+        vec3add (stlcmd::center_ges, n, p);
+
+        vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), look_at);
+        vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), eye);
+        vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), upp);
+
+        vec3sub (upp, eye, up);
     }
+}
+
+/*******************************************************************
+ * @brief   void passive_mouse_move (int x, int y)
+ */
+void passive_mouse_move (int x, int y)
+{
+    // cout << "passive_mouse_move " << x << "|" << y << endl;
 }
 
 /******************************************************************
@@ -375,6 +430,7 @@ int main(int argc, char **argv)
     glutSpecialUpFunc ( key_up );
     glutMouseFunc ( mouse_func );
     glutMotionFunc ( mouse_move );
+    glutPassiveMotionFunc ( passive_mouse_move );
 
     cout << "OpenGL Version= " << glGetString(GL_VERSION) << endl;
 
@@ -387,7 +443,7 @@ int main(int argc, char **argv)
     vec3print_vec ("min ges: ", stlcmd::min_ges);
     vec3print_vec ("max ges: ", stlcmd::max_ges);
     vec3print_vec ("center ges: ", stlcmd::center_ges);
-    set_cam_to_center();
+    fit_in();                       // Modell einpassen
 
     glutTimerFunc(unsigned(20), timer, 0);
     glutMainLoop();

@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.1
+ * @version v0.0.2
  * @date 2021-08-26
  */
 
@@ -27,10 +27,10 @@ void vec3rot_vec (float *rsp, float *rep,
                     float *res);
 void vec3rot_point_um_achse (float sx, float sy, float sz,
                                float ex, float ey, float ez,
-                               float alpha,
+                               float alpha,         // alpha in rad
                                float &px, float &py, float &pz);
 void vec3rot_point_um_achse_II (float *s, float *e,
-                                float alpha,
+                                float alpha,        // alpha in rad
                                 float *p);
 void vec3richtungs_cos (float *a, float *res);
 float vec3bertag ( float *a );                      // Vektor Betrag
