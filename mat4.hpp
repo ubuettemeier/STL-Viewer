@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.6
+ * @version v0.0.7
  * @date 2021-08-26
  */
 
@@ -82,7 +82,7 @@ float grad_to_rad (float grad);         // return rad
 float rad_to_grad (float rad);          // return grad
 
 float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
-void schnittpunkt_ebene_gerade (float *gc,    // g: gc + ret[0]*gn
+void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
 											   float *gn,           // e: ec + ret[1]*eu + ret[2]*ev
 											   float *ec,
 											   float *eu,
@@ -594,7 +594,7 @@ void mat4Rot_um_Achse (float *m, float *sp, float *ep, float alpha)
  *          g: gc + ret[0]*gn
  *          e: ec + ret[1]*eu + ret[2]*ev
  */
-void schnittpunkt_ebene_gerade (float *gc,
+void schnittpunkt_gerade_ebene (float *gc,
 											   float *gn,
 											   float *ec,
 											   float *eu,

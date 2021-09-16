@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.18
+ * @version v0.0.19
  * @date 2021-09-12
  */
 
@@ -33,8 +33,6 @@ bool button_0_down = 0;                 // mouse left button
 int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move() benötigt !!!
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
-// uint8_t look_display = 0;
-// uint8_t look_cam = 0;
 
 // ----------- Prototypen -----------------
 void help();
@@ -60,6 +58,7 @@ void help()
 {
     cout << "Usage:   ./stlviewer  file, ...\n";
     cout << "Example: ./stlviewer  STL_data/baby-tux_bin.STL\n\n";
+    cout << "---- Keyboard shortcuts ----\n";
     cout << "h : this message\n";
     cout << "s : show special key's\n";
     cout << "t : draw triangle ON/OFF\n";
@@ -392,7 +391,7 @@ void mouse_move (int x, int y)
         vec3Cross (foo, up, n); // e: stlcmd::center_ges + up + n; g: eye + foo
 
         float dpf[3] = {0, 0, 0};   // Faktoren 
-        schnittpunkt_ebene_gerade (eye, foo,
+        schnittpunkt_gerade_ebene (eye, foo,
                                    stlcmd::center_ges, up, n,
                                    dpf); 
 
