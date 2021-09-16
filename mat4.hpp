@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.5
+ * @version v0.0.6
  * @date 2021-08-26
  */
 
@@ -13,6 +13,17 @@
 #include <cstring>
 
 using namespace std;
+
+// ************************ Makros **************************************
+// s.auch double det_3a();
+#define DET_3A(a11,a12,a13,a21,a22,a23,a31,a32,a33) \
+((a11)*(a22)*(a33) - (a11)*(a23)*(a32) + \
+ (a12)*(a23)*(a31) - (a12)*(a21)*(a33) + \
+ (a13)*(a21)*(a32) - (a13)*(a22)*(a31))
+// s.auch double det_2a();
+#define DET_2A(a11,a12,a21,a22) \
+((a11)*(a22) - (a21)*(a12))
+
 
 void vec3print_vec (float *p, char endline = '\n');
 void vec3print_vec (const char *s, float *p);
@@ -71,7 +82,12 @@ float grad_to_rad (float grad);         // return rad
 float rad_to_grad (float rad);          // return grad
 
 float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
-
+void schnittpunkt_ebene_gerade (float *gc,    // g: gc + ret[0]*gn
+											   float *gn,           // e: ec + ret[1]*eu + ret[2]*ev
+											   float *ec,
+											   float *eu,
+											   float *ev,
+                         float *ret);
 /// ---------------------------------------------------------------------------------------------
 void get_max_min (float *dat, uint32_t anz_ele, uint32_t offset, float *res)
 {
@@ -571,6 +587,45 @@ void mat4Rot_um_Achse (float *m, float *sp, float *ep, float alpha)
 
   mat4Multiply (mt, mr, m);
   mat4Multiply (m, m_t, m);
+}
+
+/*!	--------------------------------------------------------------------
+ *	@brief	gc + a[0]*gn = ec + a[1]*eu + a[2]*en
+ *          g: gc + ret[0]*gn
+ *          e: ec + ret[1]*eu + ret[2]*ev
+ */
+void schnittpunkt_ebene_gerade (float *gc,
+											   float *gn,
+											   float *ec,
+											   float *eu,
+											   float *ev,
+                         float *ret)
+{
+  // float a[3];
+  float q[3];
+  double m0;
+
+  // init_vec (&a, 0.0, 0.0, 0.0, 0.0);
+  vec3set (0, 0, 0, ret);
+  // sub_vec (&q, &gc, &ec);
+  vec3sub (gc, ec, q);
+  m0 = DET_3A (eu[0], ev[0], -gn[0],
+               eu[1], ev[1], -gn[1],
+               eu[2], ev[2], -gn[2]);
+  if (m0 != 0.0) {
+    ret[0] = DET_3A (q[0], ev[0], -gn[0],
+                     q[1], ev[1], -gn[1],
+                     q[2], ev[2], -gn[2]);
+    ret[1] = DET_3A (eu[0], q[0], -gn[0],
+                     eu[1], q[1], -gn[1],
+                     eu[2], q[2], -gn[2]);
+    ret[2] = DET_3A (eu[0], ev[0], q[0],
+                     eu[1], ev[1], q[1],
+                     eu[2], ev[2], q[2]);
+    ret[0] /= m0;
+    ret[1] /= m0;
+    ret[2] /= m0;
+  } 
 }
 
 #endif
