@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.16
+ * @version v0.0.17
  * @date 2021-09-12
  */
 
@@ -33,6 +33,8 @@ bool button_0_down = 0;                 // mouse left button
 int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move() benötigt !!!
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
+uint8_t look_display = 0;
+uint8_t look_cam = 0;
 
 // ----------- Prototypen -----------------
 void help();
@@ -153,7 +155,8 @@ static void glutResize(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective (fovy, (float)w/(float)h, 0.1, 100000.0);
+    // gluPerspective (fovy, (float)w/(float)h, 0.1, 400000.0);
+    gluPerspective (fovy, (float)w/(float)h, 0.1, stlcmd::obj_radius * 80);
 }
 
 /****************************************************************
@@ -272,15 +275,18 @@ void specialkey( int key, int x, int y)
             break;
         case 101:           // top
         case 103:           // bottom
+            if (look_display)
+                break;
             if (!strg_key) {            // rotation cam
+                look_cam = 1;
                 float foo[3], n[3], p[3], upp[3];
                 float alpha = (key == 103) ? 15.0f : -15.0f;
                 if (shift)
                     alpha = (key == 103) ? 90.0f : -90.0f;
-                vec3sub (look_at, eye, n);
+                vec3sub (look_at, eye, n);      // n=Blickrichtung
                 vec3Normalize (n);
                 vec3Normalize (up);
-                vec3Cross (up, n, foo);
+                vec3Cross (up, n, foo);         // foo = Normal auf n und up
                 vec3add (eye, up, upp);
                 vec3add (stlcmd::center_ges, foo, p);
 
@@ -289,6 +295,7 @@ void specialkey( int key, int x, int y)
                 vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(alpha), upp);
 
                 vec3sub (upp, eye, up);
+                look_cam = 0;
             }
             if (strg_key) {         // move cam top down
                 float faktor = (key == 103) ? 20.0f : -20.0f;
@@ -355,14 +362,15 @@ void mouse_func (int button, int state, int x, int y)
  */
 void mouse_move (int x, int y)
 {
-    static float alpha = 0.0f;      // in [rad]
-    static float dist = 0.0f;
+    static double alpha = 0.0f;      // in [rad]
+    static double dist = 0.0f;
 
     // cout << x << "|" << y << endl;
     if (button_0_down) {
-        float dx = x - last_mx;
-        float dy = y - last_my;
-        dist = sqrt(dx*dx + dy*dy);
+        double dx = x - last_mx;
+        double dy = y - last_my;
+        dist = sqrtf64(dx*dx + dy*dy);
+        
 
         if (dx != 0) {
             alpha = atanf (dy / dx);
@@ -370,14 +378,15 @@ void mouse_move (int x, int y)
                 if (dx < 0)
                     alpha += M_PI;
             } else      // dy < 0
-                alpha = (dx < 0) ? alpha+M_PI : 2.0f*M_PI+alpha;
+                alpha = (dx < 0) ? alpha+M_PI : 2.0*M_PI+alpha;
         }
         else     // dx == 0
             alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
 
-        /**/ cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
+        // cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
 
         // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
+        look_cam = 1;
         vec3copy (buf_eye, eye);
         vec3copy (buf_look_at, look_at);
         vec3copy (buf_up, up);
@@ -393,8 +402,7 @@ void mouse_move (int x, int y)
                                    foo[0], foo[1], foo[2],     // foo[] = Blickrichtungs-Vector
                                    alpha, 
                                    n[0], n[1], n[2]);
-        */
-
+        */                                
         vec3rot_point_um_achse_II (np,                    // neue Rotationsachse um Cam-Richtung foo[] drehen
                                    foo,     // foo[] = Blickrichtungs-Vector
                                    alpha, 
@@ -409,6 +417,9 @@ void mouse_move (int x, int y)
         vec3rot_point_um_achse_II (stlcmd::center_ges, p, grad_to_rad(-dist/2.0f), upp);
 
         vec3sub (upp, eye, up); // up wider herstellen.
+        look_cam = 0;
+
+        vec3print_vec ("", p);
     }
 }
 
@@ -445,8 +456,12 @@ static void timer(int v)
 {
     static uint8_t counter = 0;
 
-    if (!system_is_going_down)
-        glutDisplay();
+    if (!system_is_going_down) {
+        look_display = 1;
+        if (!look_cam)
+            glutDisplay();
+        look_display = 0;
+    }
     glutTimerFunc(unsigned(20), timer, ++v);    // trigger timer
     counter++;
 }
@@ -492,6 +507,7 @@ int main(int argc, char **argv)
         new stlcmd( argv[i] );      // read stl-data
 
     basic = new basics(stlcmd::obj_radius * 0.5f);
+    basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
     basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
 
     vec3print_vec ("min ges: ", stlcmd::min_ges);

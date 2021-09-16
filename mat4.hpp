@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.4
+ * @version v0.0.5
  * @date 2021-08-26
  */
 
@@ -205,12 +205,8 @@ void vec3rot_point_um_achse (float sx, float sy, float sz,
   float sp[3] = {sx, sy, sz};
   float ep[3] = {ex, ey, ez};
   float p[3] = {px, py, pz};
-  float puffer[3];
-  float res[3];
-
-  vec3sub (p, sp, puffer);
-  vec3rot_vec (sp, ep, puffer, alpha, res);
-  vec3add (res, sp, p);
+  
+  vec3rot_point_um_achse_II (sp, ep, alpha, p);
 
   px = p[0];
   py = p[1];
@@ -221,10 +217,9 @@ void vec3rot_point_um_achse_II (float *s, float *e,   // s=Rotationsachse Startp
                                 float alpha,          // alpha in [rad]
                                 float *p)             // der zu drehende Punkt
 {
-  vec3rot_point_um_achse (s[0], s[1], s[2],
-                          e[0], e[1], e[2],
-                          alpha,
-                          p[0], p[1], p[2]);
+  float m[16];
+  mat4Rot_um_Achse (m, s, e, alpha);
+  mat4mulvec3 (m, p, p);    // center rotieren
 }                                
 /// ---------------------------------------------------------------------------------------------
 void vec3richtungs_cos (float *a, float *res) 

@@ -2,7 +2,7 @@
  * @file basicelement.hpp
  * @author Ulrich Büttemeier
  * @brief basics zeigt Koordiatenkreuz, Max-Quader, ....
- * @version v0.0.3
+ * @version v0.0.4
  * @date 2021-09-15
  */
 
@@ -27,6 +27,8 @@ public:
     void set_max_quader (float *min, float *max);
     void display();
 private:
+    void set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v);
+
     vector <struct _vertex_small_> ursprung;
     vector <struct _vertex_small_> max_quader;
 
@@ -81,9 +83,85 @@ basics::basics(float axeslength)
     glEnableClientState(GL_COLOR_ARRAY);
 }
 
+/*********************************************************************************************
+ * @brief Destroy the basics::basics object
+ */
 basics::~basics()
 {
+    glDeleteVertexArrays (1, koor_vaoID);
+}
 
+/******************************************************************************************************
+ * @brief   void basics::set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v)
+ */
+void basics::set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v)
+{
+    struct _vertex_small_ foo;
+    vec4set (0.8f, 0.8f, 0.8f, 1, foo.c);    // Farbe: weiss
+        
+    //-------------- XY Z+ --------------------------------
+    vec3set (max[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (min[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (min[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (max[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+
+    //-------------- XY Z-  --------------------------------
+    vec3set (min[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (max[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (max[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (min[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    //------------ YZ X+ ----------------------------------
+    vec3set (max[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (max[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (max[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    //-------------YZ X- ---------------------------------
+    vec3set (min[0], max[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], max[1], min[2], foo.v);
+    max_quader.push_back (foo);
+
+    vec3set (min[0], min[1], max[2], foo.v);
+    max_quader.push_back (foo);
+    vec3set (min[0], min[1], min[2], foo.v);
+    max_quader.push_back (foo);
 }
 
 /**************************************************************************
@@ -92,73 +170,7 @@ basics::~basics()
 void basics::set_max_quader (float *min, float *max)
 {
     if (quad_vaoID[0] == 0) {
-        struct _vertex_small_ foo;
-
-        vec4set (0.8f, 0.8f, 0.8f, 1, foo.c);    // Farbe: weiss
-        
-        //-------------- XY Z+ --------------------------------
-        vec3set (max[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (min[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (min[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (max[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-
-        //-------------- XY Z-  --------------------------------
-        vec3set (min[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (max[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (max[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (min[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        //------------ YZ X+ ----------------------------------
-        vec3set (max[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (max[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (max[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        //-------------YZ X- ---------------------------------
-        vec3set (min[0], max[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], max[1], min[2], foo.v);
-        max_quader.push_back (foo);
-
-        vec3set (min[0], min[1], max[2], foo.v);
-        max_quader.push_back (foo);
-        vec3set (min[0], min[1], min[2], foo.v);
-        max_quader.push_back (foo);
+        set_max_quader_vector (min, max, max_quader);
 
         // ------------------------------------------------------------------------
         glGenVertexArrays(1, quad_vaoID);  // create the Vertex Array Objects
@@ -177,9 +189,13 @@ void basics::set_max_quader (float *min, float *max)
         offset = (char*)NULL + 3*sizeof(float);         // color
         glColorPointer(4, GL_FLOAT, stride, offset);    // 4*float
         glEnableClientState(GL_COLOR_ARRAY);
-    }
+    } else 
+        cout << "  WARNING: set_max_quader() ist schon installiert\n";
 }
 
+/*********************************************************************
+ * @brief   void basics::display()
+ */
 void basics::display()
 {
     glMatrixMode(GL_MODELVIEW);

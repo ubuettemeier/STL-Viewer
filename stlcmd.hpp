@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.10
+ * @version v0.0.11
  * @date 2021-09-12
  */
 
@@ -324,7 +324,7 @@ bool stlcmd::read_stl (std::string fname)
             else    
                 load_type = 2;
         }
-        /**/ cout << str << "|" << str.length() <<  "| " << load_type << endl;        
+        // cout << str << "|" << str.length() <<  "| " << load_type << endl;        
         fclose(f);
     }
     
@@ -396,7 +396,7 @@ bool stlcmd::read_tex_stl (std::string fname)
         }
     }
     is.close();
-    /**/ cout << fname << ": " << stlvec.size() << " Dreiecke " << anz_tri << " triangles\n";
+    cout << stlvec.size() << " vertexe " << anz_tri << " triangles  Datei:" << fname << endl;
 
     return true;
 }
@@ -409,14 +409,14 @@ bool stlcmd::read_bin_stl (std::string fname)
     bool ret = false;
     FILE *f;
     uint8_t modname[81];                // Modelname
-    uint32_t anz_tri;                   // Anzahl Triangle
+    uint32_t anz_tri = 0;               // Anzahl Triangle
     struct _stl_bin_triangle_ sbt;      // Triangle-Struktur binär STL-File
 
     stlvec.clear();
 
     if ((f = fopen(fname.c_str(), "rb")) != NULL) {
         if (fread(modname, 80, 1, f) == 1) {                        // Modelname lesen
-            cout << modname << endl;
+            // cout << modname << endl;
             if (fread(&anz_tri, sizeof(uint32_t), 1, f) == 1) {     // Anzahl Dreiecke lesen
                 uint32_t ist_tri = 0;
                 while (!feof(f)) {
@@ -425,14 +425,13 @@ bool stlcmd::read_bin_stl (std::string fname)
                         ist_tri++;
                     }
                 }
-                /**/ cout << fname << ": " << stlvec.size() << " vertexe " << anz_tri << " triangles\n";
                 if (ist_tri == anz_tri)
                     ret = true;
             }
         }
         fclose (f);
     }
-
+    cout << stlvec.size() << " vertexe " << anz_tri << " triangles  Datei:" << fname << endl;
     return ret;
 }
 
@@ -478,9 +477,9 @@ void stlcmd::get_min_max_center()
             center[k] = (min[k] + max[k]) / 2.0f;
     }
 
-    /**/ vec3print_vec ("min: ", min);
-    /**/ vec3print_vec ("max: ", max);
-    /**/ vec3print_vec ("center: ", center);
+    // vec3print_vec ("min: ", min);
+    // vec3print_vec ("max: ", max);
+    // vec3print_vec ("center: ", center);
 }
 
 /****************************************************************
