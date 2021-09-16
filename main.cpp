@@ -1,7 +1,7 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.15
+ * @version v0.0.16
  * @date 2021-09-12
  */
 
@@ -360,12 +360,12 @@ void mouse_move (int x, int y)
 
     // cout << x << "|" << y << endl;
     if (button_0_down) {
-        int dx = x - last_mx;
-        int dy = y - last_my;
+        float dx = x - last_mx;
+        float dy = y - last_my;
         dist = sqrt(dx*dx + dy*dy);
 
         if (dx != 0) {
-            alpha = atanf ((float)dy / (float)dx);
+            alpha = atanf (dy / dx);
             if (dy >= 0) {
                 if (dx < 0)
                     alpha += M_PI;
@@ -375,23 +375,30 @@ void mouse_move (int x, int y)
         else     // dx == 0
             alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
 
-        // cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
+        /**/ cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
 
         // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
         vec3copy (buf_eye, eye);
         vec3copy (buf_look_at, look_at);
         vec3copy (buf_up, up);
 
-        float n[3], foo[3], p[3], upp[3];
-        vec3sub (look_at, eye, foo);
+        float n[3], foo[3], p[3], upp[3], np[3] = {0, 0, 0};
+        vec3sub (look_at, eye, foo);    // foo[] = Blickrichtungs-Vector
         vec3Normalize (foo);
         vec3Normalize (up);
         vec3copy (up, n);       // der up-Vector wird neue Rotationsachse n
 
+        /*
         vec3rot_point_um_achse (0, 0, 0,                    // neue Rotationsachse um Cam-Richtung foo[] drehen
-                                foo[0], foo[1], foo[2], 
-                                alpha, 
-                                n[0], n[1], n[2]);
+                                   foo[0], foo[1], foo[2],     // foo[] = Blickrichtungs-Vector
+                                   alpha, 
+                                   n[0], n[1], n[2]);
+        */
+
+        vec3rot_point_um_achse_II (np,                    // neue Rotationsachse um Cam-Richtung foo[] drehen
+                                   foo,     // foo[] = Blickrichtungs-Vector
+                                   alpha, 
+                                   n);
 
         vec3add (eye, up, upp);                 // Endpunkt von up berechnen => upp = eye + up
         vec3add (stlcmd::center_ges, n, p);     // Endpunkt Rotationsachse brechnen => p = center + n
@@ -418,9 +425,9 @@ void passive_mouse_move (int x, int y)
     int viewport[4];
     double modelview[16];
     double projection[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelview); //recuperer matrices
-    glGetDoublev(GL_PROJECTION_MATRIX, projection); //recuperer matrices
-    glGetIntegerv(GL_VIEWPORT, viewport);//viewport
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);       //recuperer matrices
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);     //recuperer matrices
+    glGetIntegerv(GL_VIEWPORT, viewport);               //viewport
 
     double u, v, w;
 	gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);

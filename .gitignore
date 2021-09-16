@@ -8,5 +8,8 @@ stlviewer
 .vscode/
 
 # no archiv file
+# Test Files
 Muehle - Galerie-1.STL
 Muehle - Grundmauer-1.STL
+STL_data/Testmodelle/*
+

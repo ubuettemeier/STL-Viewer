@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.9
+ * @version v0.0.10
  * @date 2021-09-12
  */
 
@@ -312,19 +312,19 @@ bool stlcmd::read_stl (std::string fname)
     FILE *f;
     uint8_t foo[81];
     std::string str;
+    const std::string text_kennung = "solid solidname";
     int load_type = 0;  // 0=unbekannter typ;  1=Text STL;  2=Bin STL
 
     if ((f = fopen(fname.c_str(), "rb")) != NULL) {
-        if (fread(foo, 80, 1, f) == 1) {
-            foo[80] = '\0';
-            str.assign((char*)&foo[0], 80);
-            str = util::rtrim (str);
-
-            if (str.length() >= 80)
+        if (fread(foo, text_kennung.length(), 1, f) == 1) {
+            foo[text_kennung.length()] = '\0';
+            str.assign((char*)&foo[0], text_kennung.length());
+            if (str == text_kennung)
                 load_type = 1;
-            else if ((str.length() > 0) && (str.length() < 80))
+            else    
                 load_type = 2;
         }
+        /**/ cout << str << "|" << str.length() <<  "| " << load_type << endl;        
         fclose(f);
     }
     
@@ -416,6 +416,7 @@ bool stlcmd::read_bin_stl (std::string fname)
 
     if ((f = fopen(fname.c_str(), "rb")) != NULL) {
         if (fread(modname, 80, 1, f) == 1) {                        // Modelname lesen
+            cout << modname << endl;
             if (fread(&anz_tri, sizeof(uint32_t), 1, f) == 1) {     // Anzahl Dreiecke lesen
                 uint32_t ist_tri = 0;
                 while (!feof(f)) {

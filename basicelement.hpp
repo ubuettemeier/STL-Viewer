@@ -2,7 +2,7 @@
  * @file basicelement.hpp
  * @author Ulrich Büttemeier
  * @brief basics zeigt Koordiatenkreuz, Max-Quader, ....
- * @version v0.0.2
+ * @version v0.0.3
  * @date 2021-09-15
  */
 
@@ -94,10 +94,70 @@ void basics::set_max_quader (float *min, float *max)
     if (quad_vaoID[0] == 0) {
         struct _vertex_small_ foo;
 
-        vec4set (1, 1, 1, 1, foo.c);    // Farbe: weiss
-        vec3copy (min, foo.v);
+        vec4set (0.8f, 0.8f, 0.8f, 1, foo.c);    // Farbe: weiss
+        
+        //-------------- XY Z+ --------------------------------
+        vec3set (max[0], max[1], max[2], foo.v);
         max_quader.push_back (foo);
-        vec3copy (max, foo.v);
+        vec3set (max[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (min[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (max[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (min[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], max[1], max[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (max[0], max[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], max[1], max[2], foo.v);
+        max_quader.push_back (foo);
+
+        //-------------- XY Z-  --------------------------------
+        vec3set (min[0], min[1], min[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (max[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (max[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (max[0], min[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (min[0], min[1], min[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (max[0], min[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        //------------ YZ X+ ----------------------------------
+        vec3set (max[0], max[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (max[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (max[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (max[0], min[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        //-------------YZ X- ---------------------------------
+        vec3set (min[0], max[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], max[1], min[2], foo.v);
+        max_quader.push_back (foo);
+
+        vec3set (min[0], min[1], max[2], foo.v);
+        max_quader.push_back (foo);
+        vec3set (min[0], min[1], min[2], foo.v);
         max_quader.push_back (foo);
 
         // ------------------------------------------------------------------------

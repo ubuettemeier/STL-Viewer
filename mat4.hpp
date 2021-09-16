@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.3
+ * @version v0.0.4
  * @date 2021-08-26
  */
 
@@ -217,9 +217,9 @@ void vec3rot_point_um_achse (float sx, float sy, float sz,
   pz = p[2];
 }
 /// ---------------------------------------------------------------------------------------------
-void vec3rot_point_um_achse_II (float *s, float *e,
-                                float alpha,
-                                float *p)
+void vec3rot_point_um_achse_II (float *s, float *e,   // s=Rotationsachse Startpkt. e=Endpkt.
+                                float alpha,          // alpha in [rad]
+                                float *p)             // der zu drehende Punkt
 {
   vec3rot_point_um_achse (s[0], s[1], s[2],
                           e[0], e[1], e[2],
