@@ -1,12 +1,13 @@
 /**
  * @file main.cpp
+ * @brief simple STLViewer
  * @author Ulrich Buettemeier
  * @date 2021-09-12
  */
 
-#define VERSION "v0.1.1"
+#define VERSION "v0.1.2"
 
-#define USE_FULL_SCREEN_
+#define USE_FULL_SCREEN
 
 #include <iostream>
 #include <iomanip>
@@ -70,7 +71,7 @@ void help()
     cout << "f : Model einpassen (fit in)\n";
     cout << "v : Vorderansicht XY-plane\n";
     cout << "d : Draufsicht XZ-plane\n";
-    cout << "s : Seitenansicht YZ-plane\n";
+    cout << "s : Seitenansicht von links YZ-plane\n";
     cout << "\n";
 }
 
@@ -270,7 +271,7 @@ void keyboard( unsigned char key, int x, int y)
             if (!shift && !strg_key) {
                 keyboard ('v', 0, 0);
                 shift = 1;
-                specialkey (100, 0, 0);
+                specialkey (102, 0, 0);
                 shift = 0;
                 fit_in();
             }
