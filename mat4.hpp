@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.7
+ * @version v0.0.8
  * @date 2021-08-26
  */
 
@@ -15,12 +15,11 @@
 using namespace std;
 
 // ************************ Makros **************************************
-// s.auch double det_3a();
 #define DET_3A(a11,a12,a13,a21,a22,a23,a31,a32,a33) \
 ((a11)*(a22)*(a33) - (a11)*(a23)*(a32) + \
  (a12)*(a23)*(a31) - (a12)*(a21)*(a33) + \
  (a13)*(a21)*(a32) - (a13)*(a22)*(a31))
-// s.auch double det_2a();
+
 #define DET_2A(a11,a12,a21,a22) \
 ((a11)*(a22) - (a21)*(a12))
 
@@ -83,11 +82,11 @@ float rad_to_grad (float rad);          // return grad
 
 float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
 void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
-											   float *gn,           // e: ec + ret[1]*eu + ret[2]*ev
-											   float *ec,
+											   float *gn,           
+											   float *ec,           // e: ec + ret[1]*eu + ret[2]*ev
 											   float *eu,
 											   float *ev,
-                         float *ret);
+                         float *ret);         // ret: Faktoren für die Schnittpunkt-Berechnung
 /// ---------------------------------------------------------------------------------------------
 void get_max_min (float *dat, uint32_t anz_ele, uint32_t offset, float *res)
 {
@@ -594,20 +593,18 @@ void mat4Rot_um_Achse (float *m, float *sp, float *ep, float alpha)
  *          g: gc + ret[0]*gn
  *          e: ec + ret[1]*eu + ret[2]*ev
  */
-void schnittpunkt_gerade_ebene (float *gc,
-											   float *gn,
-											   float *ec,
-											   float *eu,
-											   float *ev,
-                         float *ret)
+void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
+											          float *gn,           
+											          float *ec,    // e: ec + ret[1]*eu + ret[2]*ev
+											          float *eu,
+											          float *ev,
+                                float *ret)   // ret: Faktoren für die Schnittpunkt-Berechnung
 {
   // float a[3];
   float q[3];
   double m0;
 
-  // init_vec (&a, 0.0, 0.0, 0.0, 0.0);
-  vec3set (0, 0, 0, ret);
-  // sub_vec (&q, &gc, &ec);
+  vec3set (0.0f, 0.0f, 0.0f, ret);
   vec3sub (gc, ec, q);
   m0 = DET_3A (eu[0], ev[0], -gn[0],
                eu[1], ev[1], -gn[1],

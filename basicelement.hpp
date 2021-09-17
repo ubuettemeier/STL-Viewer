@@ -2,7 +2,7 @@
  * @file basicelement.hpp
  * @author Ulrich Büttemeier
  * @brief basics zeigt Koordiatenkreuz, Max-Quader, ....
- * @version v0.0.4
+ * @version v0.0.5
  * @date 2021-09-15
  */
 
@@ -26,19 +26,26 @@ public:
     ~basics();
     void set_max_quader (float *min, float *max);
     void display();
+
+    static bool draw_basics;
 private:
     void set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v);
 
     vector <struct _vertex_small_> ursprung;
     vector <struct _vertex_small_> max_quader;
 
-    GLuint koor_vaoID[1] = {0};    // VAO einrichten; triangle, line, ???
-    GLuint koor_vboID[1] = {0};    // VBO einrichten; triangle, line, ???
+    GLuint koor_vaoID[1] = {0};    // VAO für Koordinatenkreuz
+    GLuint koor_vboID[1] = {0};    // VBO für Koordinatenkreuz
 
-    GLuint quad_vaoID[1] = {0};    // VAO einrichten; triangle, line, ???
-    GLuint quad_vboID[1] = {0};    // VBO einrichten; triangle, line, ???
+    GLuint quad_vaoID[1] = {0};    // VAO für MIN/MAX Quader
+    GLuint quad_vboID[1] = {0};    // VBO für MIN/MAX Quader
 };
 
+bool basics::draw_basics = 1;
+
+/**********************************************************************************
+ * @brief Construct a new basics::basics object
+ */
 basics::basics(float axeslength)
 {
     struct _vertex_small_ foo;
@@ -92,7 +99,7 @@ basics::~basics()
 }
 
 /******************************************************************************************************
- * @brief   void basics::set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v)
+ * @brief   Funktion erstellt die vertexe für einen MIN/MAX Quader
  */
 void basics::set_max_quader_vector (float *min, float *max, vector <_vertex_small_> &v)
 {
@@ -165,7 +172,7 @@ void basics::set_max_quader_vector (float *min, float *max, vector <_vertex_smal
 }
 
 /**************************************************************************
- * @brief   void basics::set_max_quader (float *min, float *max)
+ * @brief   Funktion initialisiert einen MIN/MAX Quader
  */
 void basics::set_max_quader (float *min, float *max)
 {
@@ -194,10 +201,13 @@ void basics::set_max_quader (float *min, float *max)
 }
 
 /*********************************************************************
- * @brief   void basics::display()
+ * @brief   call by glutDisplayFunc()
  */
 void basics::display()
 {
+    if (!draw_basics)
+        return;
+
     glMatrixMode(GL_MODELVIEW);
     glDisable (GL_LIGHTING);
 

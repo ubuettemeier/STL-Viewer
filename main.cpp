@@ -4,7 +4,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.1.0"
+#define VERSION "v0.1.1"
 
 #define USE_FULL_SCREEN_
 
@@ -55,7 +55,8 @@ void passive_mouse_move (int x, int y);
 static void timer (int v);
 
 /*********************************************************************
- * @brief   void help()
+ * @brief   Funktion zeigt die wichtigsten shortcuts.
+ *          Pfeiltasten sind in der Funktion show_special_keys() dokumentiert.
  */
 void help()
 {
@@ -65,6 +66,7 @@ void help()
     cout << "t : draw triangles ON/OFF\n";
     cout << "l : draw lines ON/OFF\n";
     cout << "p : draw points ON/OFF\n";
+    cout << "a : draw axis ON/OFF\n";
     cout << "f : Model einpassen (fit in)\n";
     cout << "v : Vorderansicht XY-plane\n";
     cout << "d : Draufsicht XZ-plane\n";
@@ -87,7 +89,6 @@ void show_options()
 #define LEERSTELLEN 20
 void show_special_keys()
 {
-    // "→" "←" "↑" "↓"
     cout << "            +/- : zoom\n";
     cout << "        →|←|↑|↓ : rotation 15°\n";
     cout << "Shift + →|←|↑|↓ : rotation 90°\n";
@@ -108,7 +109,7 @@ void fit_in ()
 }
 
 /*********************************************************************************************
- * @brief   initial OpenGl-modes
+ * @brief   initial OpenGl-mode's
  */
 void init_scene()
 {
@@ -242,6 +243,9 @@ void keyboard( unsigned char key, int x, int y)
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
             }
             break;
+        case 'a':
+            basic->draw_basics = !basic->draw_basics;
+            break;
         case 'f':      // Einpassen (fit in) up[] bleibt unverändert.
             fit_in();
             break;
@@ -357,7 +361,7 @@ void key_up (int key, int x, int y)
 }
 
 /*************************************************************************************
- * @brief   void mouse_func (int button, int state, int x, int y)
+ * @brief   callback by mouse-click's
  */
 void mouse_func (int button, int state, int x, int y)
 {
@@ -385,7 +389,7 @@ void mouse_func (int button, int state, int x, int y)
 }
 
 /******************************************************************
- * @brief   void mouse_move (int x, int y)
+ * @brief   callback by mouse-move with button-down
  */
 void mouse_move (int x, int y)
 {
@@ -474,7 +478,7 @@ void mouse_move (int x, int y)
 }
 
 /*******************************************************************
- * @brief   void passive_mouse_move (int x, int y)
+ * @brief   callback by mouse-move without button-click
  */
 void passive_mouse_move (int x, int y)
 {
@@ -500,7 +504,7 @@ void passive_mouse_move (int x, int y)
 }
 
 /******************************************************************
- * @brief   void timer(int v) 
+ * @brief   timer callback. Ist auch 20ms eingestellt.
  */
 static void timer(int v) 
 {
@@ -514,7 +518,7 @@ static void timer(int v)
 }
 
 /********************************************************************
- * @brief   int main(int argc, char **argv) 
+ * @brief   
  */
 int main(int argc, char **argv) 
 {
