@@ -1,13 +1,15 @@
 /**
  * @file main.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.20
  * @date 2021-09-12
  */
+
+#define VERSION "v0.1.0"
 
 #define USE_FULL_SCREEN_
 
 #include <iostream>
+#include <iomanip>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -17,14 +19,14 @@
 
 using namespace std;
 
-basics *basic;  // Ursprung
+basics *basic;                  // class für Ursprung und Min-Max-Quader
 
 int src_w=500, src_h=500;
 
 float eye[3] = {0.0, 0.0, 1.0f};        // camera Position
 float look_at[3] = {0.0, 0.0, 0.0};
 float up[3] = {0, 1, 0};
-float fovy = 30.0f;                     // camera Öffnungswinkel
+float fovy = 30.0f;                     // camera Öffnungswinkel. Winkel < 30° sind eventuell Problematisch
 
 float buf_eye[3], buf_look_at[3], buf_up[3];    // Wird in mouse_func() und mouse_move() benötigt !!!
 
@@ -36,6 +38,7 @@ uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
 // ----------- Prototypen -----------------
 void help();
+void show_options();
 void show_special_keys();
 void fit_in ();                         // Modell einpassen; up[] bleibt unverändert.
 void init_scene();
@@ -56,30 +59,43 @@ static void timer (int v);
  */
 void help()
 {
-    cout << "Usage:   ./stlviewer  file, ...\n";
-    cout << "Example: ./stlviewer  STL_data/baby-tux_bin.STL\n\n";
     cout << "---- Keyboard shortcuts ----\n";
     cout << "h : this message\n";
-    cout << "s : show special key's\n";
+    cout << "k : show special key's\n";
     cout << "t : draw triangles ON/OFF\n";
     cout << "l : draw lines ON/OFF\n";
     cout << "p : draw points ON/OFF\n";
-    cout << "e : Model einpassen (fit in)\n";
-    cout << "v : Vorderansicht\n";
+    cout << "f : Model einpassen (fit in)\n";
+    cout << "v : Vorderansicht XY-plane\n";
+    cout << "d : Draufsicht XZ-plane\n";
+    cout << "s : Seitenansicht YZ-plane\n";
     cout << "\n";
 }
 
-/***************************************************************
- * @brief   void show_special_keys()
+/********************************************************************
+ * @brief   show comamnd line options
  */
+void show_options()
+{
+    cout << "Usage:   ./stlviewer  file, ...\n";
+    cout << "Example: ./stlviewer  STL_data/baby-tux_bin.STL\n\n";
+}
+
+/***************************************************************
+ * @brief   show special key's
+ */
+#define LEERSTELLEN 20
 void show_special_keys()
 {
-    cout << "+ : zoom plus\n";
-    cout << "- : zoom minus\n";
+    // "→" "←" "↑" "↓"
+    cout << "            +/- : zoom\n";
+    cout << "        →|←|↑|↓ : rotation 15°\n";
+    cout << "Shift + →|←|↑|↓ : rotation 90°\n";
+    cout << " Strg + →|←|↑|↓ : move\n";
 }
 
 /******************************************************************
- * @brief   void fit_in ()  // Modell einpassen
+ * @brief   fit model in screen
  */
 void fit_in ()
 {
@@ -92,7 +108,7 @@ void fit_in ()
 }
 
 /*********************************************************************************************
- * @brief   void init_scene()
+ * @brief   initial OpenGl-modes
  */
 void init_scene()
 {
@@ -147,7 +163,7 @@ void init_scene()
 }
 
 /**********************************************************************
- * @brief       void glutResize(int w, int h) 
+ * @brief   set perspective
  */
 static void glutResize(int w, int h) 
 {
@@ -158,7 +174,7 @@ static void glutResize(int w, int h)
 }
 
 /****************************************************************
- * @brief   void glutDisplay()
+ * @brief   display all
  */
 static void glutDisplay()
 {
@@ -183,7 +199,7 @@ static void glutDisplay()
 }
 
 /*******************************************************************
- * @brief   void keyboard( unsigned char key, int x, int y) 
+ * @brief   callback by standard Key
  */
 void keyboard( unsigned char key, int x, int y) 
 {
@@ -197,7 +213,7 @@ void keyboard( unsigned char key, int x, int y)
         case 'h':
             help();
             break;
-        case 's':
+        case 'k':
             show_special_keys();
             break;
         case '-':           // zoom kleiner
@@ -226,20 +242,40 @@ void keyboard( unsigned char key, int x, int y)
                 stlcmd::allstl[i]->set_draw_mode ( akt_mode );
             }
             break;
-        case 'e':      // Einpassen (fit in) up[] bleibt unverändert.
+        case 'f':      // Einpassen (fit in) up[] bleibt unverändert.
             fit_in();
             break;
-        case 'v':       // Vorderansicht XY
-            vec3set (0.0, 0.0, 1.0f, eye);
-            vec3set (0.0, 0.0, 0.0, look_at);
-            vec3set (0, 1, 0, up);
-            fit_in();
+        case 'v':       // Vorderansicht XY plane
+            if (!shift && !strg_key) {
+                vec3set (0.0, 0.0, 1.0f, eye);
+                vec3set (0.0, 0.0, 0.0, look_at);
+                vec3set (0, 1, 0, up);
+                fit_in();
+            }
+            break;
+        case 'd':       // Draufsicht XZ plane
+            if (!shift && !strg_key) {
+                keyboard ('v', 0, 0);
+                shift = 1;
+                specialkey (103, 0, 0);
+                shift = 0;
+                fit_in();
+            }
+            break;
+        case 's':       // Seitenansicht  YZ plane
+            if (!shift && !strg_key) {
+                keyboard ('v', 0, 0);
+                shift = 1;
+                specialkey (100, 0, 0);
+                shift = 0;
+                fit_in();
+            }
             break;
     }
 }
 
 /********************************************************************
- * @brief   void specialkey( int key, int x, int y) 
+ * @brief   callback by special Key
  */
 void specialkey( int key, int x, int y) 
 {
@@ -305,7 +341,7 @@ void specialkey( int key, int x, int y)
 }
 
 /***************************************************************************************
- * @brief   void key_up (int key, int x, int y) 
+ * @brief   callback by Key Up
  */
 void key_up (int key, int x, int y) 
 {
@@ -343,7 +379,7 @@ void mouse_func (int button, int state, int x, int y)
             keyboard ((button == 3) ? '-' : '+', 0, 0);
             break;
         default:
-            /**/ cout << button << " | " << state << " | " << x << " | " << y << endl;
+            // cout << button << " | " << state << " | " << x << " | " << y << endl;
             break;
     }
 }
@@ -482,6 +518,9 @@ static void timer(int v)
  */
 int main(int argc, char **argv) 
 {
+    if (argc < 2)
+        show_options();
+    
     help();
     glutInit(&argc, argv);
 
@@ -493,7 +532,10 @@ int main(int argc, char **argv)
     glutInitWindowPosition(0,0);
     glutInitWindowSize (src_w, src_h);
 
-    glutCreateWindow("STL-Viewer");
+    char buf[80];
+    sprintf (buf, "STL-Viewer %s", VERSION);
+    glutCreateWindow(buf);
+
     GLenum err = glewInit();
     if (GLEW_OK != err) {
         fprintf(stderr, "Glew error: %s\n", glewGetErrorString(err));

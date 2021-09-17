@@ -24,7 +24,7 @@ all: $(BIN)
 $(BIN): $(OBJ)
 	$(CC) -o $@ $< $(LDFLAGS) 
 
-$(OBJ): $(SOURCE) $(HEADER) $(OPENCVD)
+$(OBJ): $(SOURCE) $(HEADER)
 	$(CC) $(CFLAGS) $(INC) $<
 
 .PHONEY: clean
