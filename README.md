@@ -8,7 +8,7 @@ example: ./stlviewer  STL_data/baby-tux_bin.STL</p>
 - gcc c++14
 - OpenGL Version= 4.6 (Compatibility Profile) Mesa 21.0.3
 
-<pre><code>
+<pre>
 ---- Keyboard shortcuts ----
 
 h : this message
@@ -21,15 +21,15 @@ f : Model einpassen (fit in)
 v : Vorderansicht XY-plane
 d : Draufsicht XZ-plane
 s : Seitenansicht YZ-plane
-</code></pre>
-<pre><code>
+</pre>
+<pre>
 ---- special key's ----
 
             +/- : zoom
         →|←|↑|↓ : rotation 15°
 Shift + →|←|↑|↓ : rotation 90°
  Strg + →|←|↑|↓ : move
-</code></pre>
+</pre>
 <hr></hr>
 
 ![alt](README.png)
