@@ -1,7 +1,7 @@
 /**
  * @file stldev.h
  * @author Ulrich Büttemeier
- * @version v0.0.1
+ * @version v0.0.2
  * @date 2021-09-15
  */
 
@@ -29,6 +29,15 @@ struct _vertex_ {
 struct _vertex_small_ {
     float v[3];
     float c[4];
+};
+
+struct _vertex_only_ {
+    float v[3];
+};
+
+struct _pick_buf_ {
+    bool ist_aktiv;
+    float pv[3];
 };
 
 #pragma pack()

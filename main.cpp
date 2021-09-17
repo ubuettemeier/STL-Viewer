@@ -5,9 +5,9 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.1.2"
+#define VERSION "v0.1.3"
 
-#define USE_FULL_SCREEN
+#define USE_FULL_SCREEN_
 
 #include <iostream>
 #include <iomanip>
@@ -37,11 +37,15 @@ int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move()
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
+struct _pick_buf_ pick_buf = {false, 0, 0, 0};
+
 // ----------- Prototypen -----------------
 void help();
 void show_options();
 void show_special_keys();
 void fit_in ();                         // Modell einpassen; up[] bleibt unverändert.
+bool get_3D_from_view (int x, int y, float *ret);    // Get the 3D-Data from viewport. 3D result => ret[3]
+bool get_2D_from_3Dkoor (float *v, int &x, int &y);
 void init_scene();
 static void glutResize (int w, int h);
 static void glutDisplay ();
@@ -109,6 +113,75 @@ void fit_in ()
     vec3add_vec_mul_fakt (eye, r, -1.0f, look_at);
 }
 
+/***********************************************************************
+ * @brief Get the 2D from 3D Koordinate
+ */
+bool get_2D_from_3Dkoor (float *k, int &x, int &y)
+{
+    bool ret = true;
+    GLdouble u, v, w;
+
+    int viewport[4];
+    double modelview[16];
+    double projection[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);       //recuperer matrices
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);     //recuperer matrices
+    glGetIntegerv(GL_VIEWPORT, viewport);               //viewport
+
+    gluProject (k[0], k[1], k[2],
+                modelview,
+                projection,
+                viewport,
+                &u, &v, &w);
+    x = u;
+    y = src_h - v;
+
+    return ret;
+}
+
+/**************************************************************************************
+ * @brief Get the 3D-Data from viewport
+ * @param ret wenn keine 3D bei xy liegen ist die z-Komponente von ret[2] = FLT_MAX
+ * @return true: 3D select;  false: no geometrie-data at xy
+ */
+#define SHOW_KONTROL_AUSGABE_
+
+bool get_3D_from_view (int x, int y, float *ret)
+{
+    bool is_sell = true;
+    float zbuf_tiefe;
+    int y_new = src_h - y -1;
+
+    glReadPixels( x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuf_tiefe);     // Achtung: Y-Ursprung muß nach bottom gelegt werden !!!
+
+    int viewport[4];
+    double modelview[16];
+    double projection[16];
+    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);       //recuperer matrices
+    glGetDoublev(GL_PROJECTION_MATRIX, projection);     //recuperer matrices
+    glGetIntegerv(GL_VIEWPORT, viewport);               //viewport
+
+    double u, v, w;
+	gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
+    if (zbuf_tiefe == 1.0f) {
+        is_sell = false;
+        w = FLT_MAX;
+    }
+    vec3set (u, v, w, ret);
+
+#ifdef SHOW_KONTROL_AUSGABE
+    if (is_sell) {
+        int i, j;
+        get_2D_from_3Dkoor (ret, i, j);
+        /**/ cout << u << "|" << v << "|" << w << endl;
+        /**/ cout << "i: " << i << " j: " << j << endl;
+        /**/ cout << "x: " << x << " y: " << y << endl;
+    }
+#endif
+
+    return is_sell;
+}
+
 /*********************************************************************************************
  * @brief   initial OpenGl-mode's
  */
@@ -173,6 +246,9 @@ static void glutResize(int w, int h)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective (fovy, (float)w/(float)h, 0.1, stlcmd::obj_radius * 80);
+
+    src_w = w;
+    src_h = h;
 }
 
 /****************************************************************
@@ -373,11 +449,14 @@ void mouse_func (int button, int state, int x, int y)
                 vec3copy (eye, buf_eye);            // Cam-Pos sichern. Wird in mouse_move() benötigt !!!
                 vec3copy (look_at, buf_look_at);
                 vec3copy (up, buf_up);
+                float foo[3];
+                if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {
+                    vec3copy (foo, pick_buf.pv);
+                }
             } else {    // button 0 up
                 // cout << "button up\n";
+                glutSetCursor( GLUT_CURSOR_RIGHT_ARROW );
             }
-            
-                
             break;
         case 3:     // wheel scrool down
         case 4:     // wheel scroll up
@@ -402,6 +481,7 @@ void mouse_move (int x, int y)
             double dx = x - last_mx;
             double dy = y - last_my;
 
+            glutSetCursor( GLUT_CURSOR_CROSSHAIR );
             // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
             vec3copy (buf_eye, eye);
             vec3copy (buf_look_at, look_at);
@@ -435,8 +515,6 @@ void mouse_move (int x, int y)
             else     // dx == 0
                 alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
 
-            // cout << "dx=" << dx << " dy=" << dy << " alpha=" << rad_to_grad(alpha) << " dist=" << dist << endl;
-
             // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
             vec3copy (buf_eye, eye);
             vec3copy (buf_look_at, look_at);
@@ -450,13 +528,16 @@ void mouse_move (int x, int y)
             vec3Cross (foo, up, n);         // Senkrechte von up und foo (Blickrichtung)
 
             float dpf[3] = {0, 0, 0};   // Faktoren 
-            schnittpunkt_gerade_ebene (eye, foo,                // g: eye + foo
-                                    stlcmd::center_ges, up, n,  // e: stlcmd::center_ges + up + n;
-                                    dpf); 
-
-            float dp[3];
-            vec3add_vec_mul_fakt (eye, foo, dpf[2], dp);    // dp (Durchstoßpunkt) brechnen
-            
+            float dp[3];                // Durchstoßpunkt.
+            if (pick_buf.ist_aktiv) {
+                vec3copy (pick_buf.pv, dp);     // pick-Punkt = Drehpunkt
+                glutSetCursor( GLUT_CURSOR_CYCLE );
+            } else {
+                schnittpunkt_gerade_ebene (eye, foo,                // g: eye + foo
+                                           stlcmd::center_ges, up, n,  // e: stlcmd::center_ges + up + n;
+                                           dpf); 
+                vec3add_vec_mul_fakt (eye, foo, dpf[2], dp);    // dp (Durchstoßpunkt) brechnen
+            }
             float ap[3];
             vec3copy (up, ap);      // ap = up
 
@@ -464,10 +545,10 @@ void mouse_move (int x, int y)
                                     foo,     // foo[] = Blickrichtungs-Vector
                                     alpha, 
                                     ap);
-            vec3add (eye, up, upp);             // Endpunkt von up berechnen => upp = eye + up. Muss anschließend zurückgerechnet werden.
 
             vec3add (dp, ap, p);     // Endpunkt für Rotationsachse brechnen => p = dp + ap
 
+            vec3add (eye, up, upp);  // Endpunkt von up berechnen => upp = eye + up. Muss anschließend zurückgerechnet werden.
             // Cam um Rotationsachse (dp[], p[]) drehen.  (dp: Durchstoßpunkt durch Ebene: stlcmd::center_ges, up, n )
             vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), look_at);    
             vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), eye);
@@ -483,29 +564,14 @@ void mouse_move (int x, int y)
  */
 void passive_mouse_move (int x, int y)
 {
-    float zbuf_tiefe;
-    int y_new = src_h - y -1;
-
-    glReadPixels( x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuf_tiefe);     // Achtung: Y-Ursprung muß nach bottom gelegt werden !!!
-
-    int viewport[4];
-    double modelview[16];
-    double projection[16];
-    glGetDoublev(GL_MODELVIEW_MATRIX, modelview);       //recuperer matrices
-    glGetDoublev(GL_PROJECTION_MATRIX, projection);     //recuperer matrices
-    glGetIntegerv(GL_VIEWPORT, viewport);               //viewport
-
-    double u, v, w;
-	gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
-    if (zbuf_tiefe != 1) {
-        // cout << u << "|" << v << "|" << w << endl;
-    }
-
+    float foo[3];
+    get_3D_from_view (x, y, foo);
+    // vec3print_vec ("", foo);
     // cout << "passive_mouse_move " << x << "|" << y << endl;
 }
 
 /******************************************************************
- * @brief   timer callback. Ist auch 20ms eingestellt.
+ * @brief   timer callback. Ist auf 20ms eingestellt.
  */
 static void timer(int v) 
 {
@@ -566,12 +632,13 @@ int main(int argc, char **argv)
 
     basic = new basics(stlcmd::obj_radius * 0.5f);
     basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
-    basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
 
     vec3print_vec ("min ges: ", stlcmd::min_ges);
     vec3print_vec ("max ges: ", stlcmd::max_ges);
     vec3print_vec ("center ges: ", stlcmd::center_ges);
-    cout << "R: " << stlcmd::obj_radius << endl;
+    /**/ cout << "R: " << stlcmd::obj_radius << endl;
+    /**/ cout << "Anz. triangle: " << stlcmd::get_anz_triangle() << endl;
+
     fit_in();                       // Modell einpassen
 
     glutTimerFunc(unsigned(20), timer, 0);

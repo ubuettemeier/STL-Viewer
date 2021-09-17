@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.11
+ * @version v0.0.12
  * @date 2021-09-12
  */
 
@@ -53,6 +53,7 @@ public:
     static vector<stlcmd *> allstl;
     static void init_stlcmd();
     static void clear_allstl();
+    static uint64_t get_anz_triangle();
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -65,6 +66,7 @@ private:
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
     void set_color (float *c);
     void make_line_vertex();
+    void make_triangle_center();
 
     uint32_t id;    
     string filename;
@@ -73,6 +75,7 @@ private:
 
     std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle, point
     std::vector <struct _vertex_> stlline;  // vertex buffer for line
+    std::vector <struct _vertex_only_> tri_center;
     
     float *col = MEM(4);
     float *center = MEM(3);
@@ -121,6 +124,7 @@ stlcmd::stlcmd (string fname)
     if (read_stl(filename)) {
         get_min_max_center ();
         set_color ( col );
+        make_triangle_center ();
         make_line_vertex ();
 
         glGenVertexArrays(ANZ_OBJ, vaoID);  // create the Vertex Array Objects
@@ -234,6 +238,18 @@ void stlcmd::clear_allstl()
         else 
             allstl[i]->~stlcmd();
     }
+}
+
+/**************************************************************
+ * @brief   Function ermittelt Anzahl aller triangles
+ */
+uint64_t stlcmd::get_anz_triangle()
+{
+    uint64_t ret = 0;
+    for (size_t i=0; i<allstl.size(); i++) 
+        ret += allstl[i]->stlvec.size() / 3;
+
+    return ret;
 }
 
 /**********************************************************
@@ -540,6 +556,25 @@ void stlcmd::make_line_vertex()
        stlline.push_back (stlvec[i+2]);
        stlline.push_back (stlvec[i]);
     }
+}
+
+/*****************************************************************
+ * @brief 
+ */
+void stlcmd::make_triangle_center()
+{
+    struct _vertex_only_ sum;
+    for (size_t i=0; i<stlvec.size(); i+=3) {
+        vec3set (0, 0, 0, sum.v);
+        for (int n=0; n<3; n++) 
+            vec3add (sum.v, stlvec[i+n].n, sum.v);
+
+        sum.v[0] /= 3.0f;
+        sum.v[1] /= 3.0f;
+        sum.v[2] /= 3.0f;
+        tri_center.push_back(sum);
+    }
+    // cout << "tri_center.size()= " << tri_center.size() << endl;
 }
 
 #endif
