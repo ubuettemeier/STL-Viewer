@@ -20,12 +20,12 @@ a : draw axis ON/OFF
 f : Model einpassen (fit in)
 v : Vorderansicht XY-plane
 d : Draufsicht XZ-plane
-s : Seitenansicht YZ-plane
+s : Seitenansicht von links YZ-plane
 </pre>
 <pre>
 ---- special key's ----
 
-            +/- : zoom
+            +|- : zoom
         →|←|↑|↓ : rotation 15°
 Shift + →|←|↑|↓ : rotation 90°
  Strg + →|←|↑|↓ : move
