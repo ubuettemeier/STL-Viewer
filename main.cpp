@@ -3,9 +3,11 @@
  * @brief simple STLViewer
  * @author Ulrich Buettemeier
  * @date 2021-09-12
+ * @todo mouse move Funktion muss optimiert werden.
+ *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.1.3"
+#define VERSION "v0.1.4"
 
 #define USE_FULL_SCREEN_
 
@@ -37,7 +39,7 @@ int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move()
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
-struct _pick_buf_ pick_buf = {false, 0, 0, 0};
+struct _pick_buf_ pick_buf = {false, 0, 0, 0};  // Zeigt an, ob und wo ein Element gepickt wurde. Wird in mouse_func() und mouse_move() verwendet.
 
 // ----------- Prototypen -----------------
 void help();
@@ -450,8 +452,8 @@ void mouse_func (int button, int state, int x, int y)
                 vec3copy (look_at, buf_look_at);
                 vec3copy (up, buf_up);
                 float foo[3];
-                if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {
-                    vec3copy (foo, pick_buf.pv);
+                if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {  // Nachschauen, ob ein Element gepickt wurde.
+                    vec3copy (foo, pick_buf.pv);    
                 }
             } else {    // button 0 up
                 // cout << "button up\n";
@@ -564,10 +566,10 @@ void mouse_move (int x, int y)
  */
 void passive_mouse_move (int x, int y)
 {
+    /**** Funktionalität wird noch nicht benötigt ******
     float foo[3];
     get_3D_from_view (x, y, foo);
-    // vec3print_vec ("", foo);
-    // cout << "passive_mouse_move " << x << "|" << y << endl;
+    */
 }
 
 /******************************************************************
@@ -639,7 +641,7 @@ int main(int argc, char **argv)
     /**/ cout << "R: " << stlcmd::obj_radius << endl;
     /**/ cout << "Anz. triangle: " << stlcmd::get_anz_triangle() << endl;
 
-    fit_in();                       // Modell einpassen
+    fit_in();                       // Model einpassen
 
     glutTimerFunc(unsigned(20), timer, 0);
     glutMainLoop();

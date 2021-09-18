@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.8
+ * @version v0.0.9
  * @date 2021-08-26
  */
 
@@ -40,7 +40,7 @@ void vec3rot_point_um_achse (float sx, float sy, float sz,
                                float ex, float ey, float ez,
                                float alpha,         // alpha in rad
                                float &px, float &py, float &pz);
-void vec3rot_point_um_achse_II (float *s, float *e,
+void vec3rot_point_um_achse_II (float *s, float *e, // Rot.-achse s: Startpunkt; e: Endpunk
                                 float alpha,        // alpha in rad
                                 float *p);
 void vec3richtungs_cos (float *a, float *res);
@@ -169,7 +169,10 @@ void vec4copy (float *a, float *b)
   for (int i=0; i<4; i++)
       b[i] = a[i];
 }
-/// ---------------------------------------------------------------------------------------------
+/**********************************************************************************
+ * @brief   Diese Funktion nicht mehr verwenden. 
+ *          Funktion ist ersetzt worden durch <vec3rot_point_um_achse_II()>
+ */
 void vec3rot_vec (float *rsp, float *rep,
                   float *ve,
                   float a,          // a = Rotationswinkel [rad]
@@ -185,7 +188,7 @@ void vec3rot_vec (float *rsp, float *rep,
   vec3Normalize ( xx );
   vec3Cross ( xx, ve, zz );
   
-  if (vec3bertag(zz) == 0.0f) {
+  if (vec3bertag(zz) == 0.0f) {   // dieser Zustand darf nicht vorkommen !!!
     // cout << "betrag = 0\n";
   }
   vec3Normalize ( zz );

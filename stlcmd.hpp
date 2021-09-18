@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.12
+ * @version v0.0.13
  * @date 2021-09-12
  */
 
@@ -71,7 +71,7 @@ private:
     uint32_t id;    
     string filename;
     bool init_by_new;
-    uint8_t draw_mode = draw_triangle | draw_line;
+    uint8_t draw_mode = draw_triangle;
 
     std::vector <struct _vertex_> stlvec;   // vertex buffer for triangle, point
     std::vector <struct _vertex_> stlline;  // vertex buffer for line
