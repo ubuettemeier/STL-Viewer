@@ -7,7 +7,7 @@
  *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.0"
+#define VERSION "v0.2.1"
 
 #define USE_FULL_SCREEN_
 
