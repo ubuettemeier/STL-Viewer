@@ -7,7 +7,7 @@
  *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.1"
+#define VERSION "v0.2.2"
 
 #define USE_FULL_SCREEN_
 
@@ -73,7 +73,7 @@ void help()
     cout << "t : draw triangles ON/OFF\n";
     cout << "l : draw lines ON/OFF\n";
     cout << "p : draw points ON/OFF\n";
-    cout << "a : draw axis ON/OFF\n";
+    cout << "a : draw axis, Max, planes ON/OFF\n";
     cout << "f : Model einpassen (fit in)\n";
     cout << "v : Vorderansicht XY-plane\n";
     cout << "d : Draufsicht XZ-plane\n";
@@ -269,10 +269,10 @@ static void glutDisplay()
                 look_at[0], look_at[1], look_at[2],     // center
                 up[0], up[1], up[2] );                  // up
 
-    basic->display();
-
     for (size_t i=0; i<stlcmd::allstl.size(); i++) 
         stlcmd::allstl[i]->display();
+
+    basic->display();
 
     glutSwapBuffers();
     glutReportErrors();
@@ -638,14 +638,15 @@ int main(int argc, char **argv)
     for (int i=1; i<argc; i++) 
         new stlcmd( argv[i] );      // read stl-data
 
-    basic = new basics(stlcmd::obj_radius * 0.5f);
-    basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);
+    basic = new basics(stlcmd::obj_radius * 0.5f);                      // Koordinatenkreus anlegen
+    basic->set_max_quader (stlcmd::min_ges, stlcmd::max_ges);           // MAX-Quader anlegen
+    basic->set_hauptebene (stlcmd::center_ges, stlcmd::obj_radius);     // Haupebenen anlegen.
 
     vec3print_vec ("min ges: ", stlcmd::min_ges);
     vec3print_vec ("max ges: ", stlcmd::max_ges);
     vec3print_vec ("center ges: ", stlcmd::center_ges);
     /**/ cout << "R: " << stlcmd::obj_radius << endl;
-    /**/ cout << "Anz. triangle: " << stlcmd::get_anz_triangle() << endl;
+    /**/ cout << "Anz. triangle: " << stlcmd::get_anz_all_triangle() << endl;
 
     fit_in();                       // Model einpassen
 

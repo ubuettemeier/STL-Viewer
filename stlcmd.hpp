@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.14
+ * @version v0.0.15
  * @date 2021-09-12
  */
 
@@ -51,11 +51,12 @@ public:
     void set_color (float *c);
     void set_color (float r, float g, float b, float a);
 
+// ------------- static functions ------------------------------
     static void *operator new (std::size_t size);
     static vector<stlcmd *> allstl;
     static void init_stlcmd();
     static void clear_allstl();
-    static uint64_t get_anz_triangle();
+    static uint64_t get_anz_all_triangle();
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -222,7 +223,7 @@ void stlcmd::clear_allstl()
 /**************************************************************
  * @brief   Function ermittelt Anzahl aller triangles
  */
-uint64_t stlcmd::get_anz_triangle()
+uint64_t stlcmd::get_anz_all_triangle()
 {
     uint64_t ret = 0;
     for (size_t i=0; i<allstl.size(); i++) 

@@ -16,7 +16,7 @@ k : show special key's
 t : draw triangles ON/OFF
 l : draw lines ON/OFF
 p : draw points ON/OFF
-a : draw axis ON/OFF
+a : draw axis, Max, planes ON/OFF
 f : Model einpassen (fit in)
 v : Vorderansicht XY-plane
 d : Draufsicht XZ-plane
