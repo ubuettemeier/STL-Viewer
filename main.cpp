@@ -290,6 +290,12 @@ void keyboard( unsigned char key, int x, int y)
             delete basic;
             glutDestroyWindow(glutGetWindow ());
             break;
+        /*
+        case 'q':       // use for test's
+            for (size_t i=0; i<stlcmd::allstl.size(); i++)
+                stlcmd::allstl[i]->set_color (0.9, 0, 0, 1);
+            break;
+        */
         case 'h':
             help();
             break;
@@ -627,7 +633,7 @@ int main(int argc, char **argv)
     cout << "OpenGL Version= " << glGetString(GL_VERSION) << endl;
 
     init_scene();
-    stlcmd::init_stlcmd();
+    stlcmd::init_stlcmd();      // static's initialisieren
 
     for (int i=1; i<argc; i++) 
         new stlcmd( argv[i] );      // read stl-data

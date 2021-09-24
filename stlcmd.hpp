@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.13
+ * @version v0.0.14
  * @date 2021-09-12
  */
 
@@ -48,6 +48,8 @@ public:
     void display ();
     void set_draw_mode (uint8_t mode);
     uint8_t get_draw_mode ();
+    void set_color (float *c);
+    void set_color (float r, float g, float b, float a);
 
     static void *operator new (std::size_t size);
     static vector<stlcmd *> allstl;
@@ -64,7 +66,6 @@ private:
     void get_min_max_center();
     void calc_max_r();
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
-    void set_color (float *c);
     void make_line_vertex();
     void make_triangle_center();
 
@@ -180,28 +181,6 @@ stlcmd::stlcmd (string fname)
     use_new = false;
 }
 
-/********************************************************************
- * @brief   void stlcmd::set_color (float *c) 
- */
-void stlcmd::set_color (float *c) 
-{
-    vec4copy (c, col);
-
-    if (vboID[0] != 0) {
-        for (size_t i=0; i<stlvec.size(); i++) 
-            vec4copy (c, stlvec[i].c);
-        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
-        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
-    }
-
-    if (vboID[1] != 0) {
-        for (size_t i=0; i<stlline.size(); i++)
-            vec4copy (c, stlline[i].c);
-        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);       // VBO 1
-        glBufferData(GL_ARRAY_BUFFER, stlline.size() *sizeof(struct _vertex_), stlline.data(), GL_STATIC_DRAW);        
-    }
-}
-
 /**********************************************************
  * @brief Destroy the stlcmd::stlcmd object
  */
@@ -250,6 +229,38 @@ uint64_t stlcmd::get_anz_triangle()
         ret += allstl[i]->stlvec.size() / 3;
 
     return ret;
+}
+
+/********************************************************************
+ * @brief   
+ * @param   c = float[4]
+ */
+void stlcmd::set_color (float *c) 
+{
+    vec4copy (c, col);
+
+    if (vboID[0] != 0) {
+        for (size_t i=0; i<stlvec.size(); i++) 
+            vec4copy (c, stlvec[i].c);
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+    }
+
+    if (vboID[1] != 0) {
+        for (size_t i=0; i<stlline.size(); i++)
+            vec4copy (c, stlline[i].c);
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);       // VBO 1
+        glBufferData(GL_ARRAY_BUFFER, stlline.size() *sizeof(struct _vertex_), stlline.data(), GL_STATIC_DRAW);        
+    }
+}
+
+/***************************************************
+ * 
+ */
+void stlcmd::set_color (float r, float g, float b, float a)
+{
+    float foo[4] = {r, g, b, a};
+    set_color (foo);
 }
 
 /**********************************************************
