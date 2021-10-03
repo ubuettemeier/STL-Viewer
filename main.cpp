@@ -7,7 +7,7 @@
  *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.4"
+#define VERSION "v0.2.5"
 
 #define USE_FULL_SCREEN_
 
@@ -160,7 +160,7 @@ bool get_3D_from_view (int x, int y, float *ret)
 {
     bool is_sell = true;
     float zbuf_tiefe;
-    int y_new = win_h - y -1;
+    int y_new = win_h - y -1;   // Achtung: viewplane hat den Ursprung unten-links! Window (x, y) hat den Ursprung oben-links.
 
     glReadPixels( x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuf_tiefe);     // Achtung: Y-Ursprung muß nach bottom gelegt werden !!!
 
@@ -480,11 +480,11 @@ void mouse_func (int button, int state, int x, int y)
         case 4: {   // wheel scroll up
                 float foo[3];
                 float faktor = (button==4) ? 10.0f : -10.0f;
-                
-                if ((get_3D_from_view (x, y, foo) == false) ||        // es ist mit der Funktion <get_3D_from_view()> kein Punkt gefunden worden !
+
+                if ((get_3D_from_view (x, y, foo) == false) ||        // es ist mit der Funktion <get_3D_from_view()> kein 3D Punkt gefunden worden !
                     (button == 3)) {                // zoom erfolgt in Richtung look_at
                     float r[3];     
-                    vec3sub (look_at, eye, r);      // Richtung ermitteln
+                    vec3sub (look_at, eye, r);      // Richtung ermitteln. r[] zeigt in Richtung look_at[]
                     vec3Normalize (r);
                     vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
                     vec3add (eye, r, eye);
