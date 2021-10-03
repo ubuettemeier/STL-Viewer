@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.10
+ * @version v0.0.11
  * @date 2021-08-26
  */
 
@@ -9,7 +9,6 @@
 #define MAT4HPP
 
 #include <iostream>
-// #include <math.h>
 #include <cmath>
 #include <cstring>
 #include <limits>
@@ -102,7 +101,7 @@ void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
 void get_max_min (float *dat, uint32_t anz_ele, uint32_t offset, float *res)
 {
     res[0] = res[2] = res[4] = std::numeric_limits<float>::max(); // 1000000.0;    // min
-    res[1] = res[3] = res[5] = std::numeric_limits<float>::min(); // -1000000.0;   // max
+    res[1] = res[3] = res[5] = std::numeric_limits<float>::lowest(); // -1000000.0;   // max
 
     for (uint32_t n=0; n<anz_ele; n++) {
         uint32_t basis = n*offset;

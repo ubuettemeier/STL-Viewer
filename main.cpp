@@ -7,7 +7,7 @@
  *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.3"
+#define VERSION "v0.2.4"
 
 #define USE_FULL_SCREEN_
 
@@ -151,7 +151,7 @@ bool get_2D_from_3Dkoor (float *k, int &x, int &y)
 
 /**************************************************************************************
  * @brief Get the 3D-Data from viewport
- * @param ret wenn keine 3D bei xy liegen ist die z-Komponente von ret[2] = FLT_MAX
+ * @param ret wenn keine 3D bei xy liegen ist die z-Komponente von ret[2] = std::numeric_limits<float>::lowest()  ????
  * @return true: 3D select;  false: no geometrie-data at xy
  */
 #define SHOW_KONTROL_AUSGABE_
@@ -174,9 +174,9 @@ bool get_3D_from_view (int x, int y, float *ret)
     double u, v, w;
     gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
 
-    if (zbuf_tiefe == 1.0f) {
+    if (zbuf_tiefe == 1.0f) {       // es wurde kein 3D Punkt gefunden
         is_sell = false;
-        w = FLT_MAX;
+        w = std::numeric_limits<float>::lowest();
     }
     vec3set (u, v, w, ret);
 
@@ -256,7 +256,8 @@ static void glutResize(int w, int h)
     glViewport(0, 0, w, h);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective (fovy, (float)w/(float)h, 0.1, stlcmd::obj_radius * 80);
+    // gluPerspective (GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar);
+    gluPerspective (fovy, (float)w/(float)h, 0.1, stlcmd::obj_radius * 80); 
 
     win_w = w;
     win_h = h;
@@ -300,7 +301,7 @@ void keyboard( unsigned char key, int x, int y)
             glutDestroyWindow(glutGetWindow ());
             break;
         /*
-        case 'q':       // use for test's
+        case 'q':       // 'q' use for test's
             for (size_t i=0; i<stlcmd::allstl.size(); i++)
                 stlcmd::allstl[i]->set_color (0.9, 0, 0, 1);
             break;
@@ -476,8 +477,28 @@ void mouse_func (int button, int state, int x, int y)
             }
             break;
         case 3:     // wheel scrool down
-        case 4:     // wheel scroll up
-            keyboard ((button == 3) ? '-' : '+', 0, 0);
+        case 4: {   // wheel scroll up
+                float foo[3];
+                float faktor = (button==4) ? 10.0f : -10.0f;
+                
+                if ((get_3D_from_view (x, y, foo) == false) ||        // es ist mit der Funktion <get_3D_from_view()> kein Punkt gefunden worden !
+                    (button == 3)) {                // zoom erfolgt in Richtung look_at
+                    float r[3];     
+                    vec3sub (look_at, eye, r);      // Richtung ermitteln
+                    vec3Normalize (r);
+                    vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
+                    vec3add (eye, r, eye);
+                    vec3add (look_at, r, look_at);
+                } else {            // die Funktion <get_3D_from_view()> hat ein Punkt gefunden !
+                                    // zoom erfolgt in Richtung foo[3] !!!
+                    float r[3];     
+                    vec3sub (foo, eye, r);      // Richtung ermitteln. r[] zeigt auf foo[].
+                    vec3Normalize (r);
+                    vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
+                    vec3add (eye, r, eye);
+                    vec3add (look_at, r, look_at);
+                }
+            }
             break;
         default:
             // cout << button << " | " << state << " | " << x << " | " << y << endl;

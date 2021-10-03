@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.16
+ * @version v0.0.17
  * @date 2021-09-12
  */
 
@@ -18,6 +18,7 @@
 #include <fstream>
 #include <cstring>
 #include <cfloat>
+#include <limits>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -489,8 +490,8 @@ void stlcmd::move_bin_stl_to_stlvec (struct _stl_bin_triangle_ stb)
 void stlcmd::get_min_max_center()
 {
     if (stlvec.size()) {
-        vec3set (FLT_MAX, min);
-        vec3set (FLT_MIN, max);
+        vec3set (std::numeric_limits<float>::max(), min);
+        vec3set (std::numeric_limits<float>::lowest(), max);
         
         for (size_t i=0; i<stlvec.size(); i++) {
             for (int k=0; k<3; k++) {
@@ -526,8 +527,8 @@ void stlcmd::calc_max_r()
  */
 void stlcmd::get_min_max_center_ges()      // berechnet den Gesamt Schwerpunkt.
 {
-    vec3set (FLT_MAX, min_ges);
-    vec3set (FLT_MIN, max_ges);
+    vec3set (std::numeric_limits<float>::max(), min_ges);
+    vec3set (std::numeric_limits<float>::lowest(), max_ges);
 
     for (size_t i=0; i<allstl.size(); i++) {
         for (int j=0; j<3; j++) {
