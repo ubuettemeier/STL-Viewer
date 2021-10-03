@@ -29,6 +29,10 @@ s : Seitenansicht von links YZ-plane
         →|←|↑|↓ : rotation 15°
 Shift + →|←|↑|↓ : rotation 90°
  Strg + →|←|↑|↓ : move
+
+       mouse left button : rotation
+             mouse wheel : zoom
+Strg + mouse left button : move
 </pre>
 <hr></hr>
 

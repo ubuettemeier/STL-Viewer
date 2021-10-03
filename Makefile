@@ -4,7 +4,7 @@ CC = g++
 CFLAGS = --std=c++14
 CFLAGS += -Wall -c -O0 -DNDEBUG
 
-LDFLAGS += -lGL -lGLU -lglut -lGLEW
+LDFLAGS += -lGL -lGLU -lglut -lGLEW 
 
 FILENAME = main
 BUILDFILE = stlviewer

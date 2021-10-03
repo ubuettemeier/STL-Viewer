@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.15
+ * @version v0.0.16
  * @date 2021-09-12
  */
 
@@ -489,8 +489,8 @@ void stlcmd::move_bin_stl_to_stlvec (struct _stl_bin_triangle_ stb)
 void stlcmd::get_min_max_center()
 {
     if (stlvec.size()) {
-        vec3set (FLT_MAX, FLT_MAX, FLT_MAX, min);
-        vec3set (FLT_MIN, FLT_MIN, FLT_MIN, max);
+        vec3set (FLT_MAX, min);
+        vec3set (FLT_MIN, max);
         
         for (size_t i=0; i<stlvec.size(); i++) {
             for (int k=0; k<3; k++) {
@@ -517,6 +517,7 @@ void stlcmd::calc_max_r()
 {
     float foo[3];
     vec3sub (max_ges, center_ges, foo);
+    vec3print_vec ("foo=", foo);
     stlcmd::obj_radius = vec3bertag (foo);
 }
 
@@ -525,8 +526,8 @@ void stlcmd::calc_max_r()
  */
 void stlcmd::get_min_max_center_ges()      // berechnet den Gesamt Schwerpunkt.
 {
-    vec3set (FLT_MAX, FLT_MAX, FLT_MAX, min_ges);
-    vec3set (FLT_MIN, FLT_MIN, FLT_MIN, max_ges);
+    vec3set (FLT_MAX, min_ges);
+    vec3set (FLT_MIN, max_ges);
 
     for (size_t i=0; i<allstl.size(); i++) {
         for (int j=0; j<3; j++) {
@@ -548,9 +549,9 @@ void stlcmd::get_min_max_center_ges()      // berechnet den Gesamt Schwerpunkt.
  */
 void stlcmd::init_stlcmd()
 {
-    vec3set (-1, -1, -1, min_ges);
-    vec3set (1, 1, 1, max_ges);
-    vec3set (0, 0, 0, center_ges);
+    vec3set (-1, min_ges);
+    vec3set (1, max_ges);
+    vec3set (0, center_ges);
 }
 
 /******************************************************************
@@ -577,7 +578,7 @@ void stlcmd::make_triangle_center()
 {
     struct _vertex_only_ sum;
     for (size_t i=0; i<stlvec.size(); i+=3) {
-        vec3set (0, 0, 0, sum.v);
+        vec3set (0, sum.v);
         for (int n=0; n<3; n++) 
             vec3add (sum.v, stlvec[i+n].n, sum.v);
 

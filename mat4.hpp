@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.9
+ * @version v0.0.10
  * @date 2021-08-26
  */
 
@@ -9,8 +9,10 @@
 #define MAT4HPP
 
 #include <iostream>
-#include <math.h>
+// #include <math.h>
+#include <cmath>
 #include <cstring>
+#include <limits>
 
 using namespace std;
 
@@ -24,10 +26,11 @@ using namespace std;
 ((a11)*(a22) - (a21)*(a12))
 
 
-void vec3print_vec (float *p, char endline = '\n');
+void vec3print_vec (float *p, const char *endline = "\n");
 void vec3print_vec (const char *s, float *p);
 void vec4print_vec (float *p);
-void vec3set (float x, float y, float z, float *res);
+void vec3set (const float wert, float *res);
+void vec3set (const float x, const float y, const float z, float *res);
 void vec4set (float x, float y, float z, float u, float *res);
 void vec3copy (float *a, float *b);                     // a => b
 void vec4copy (float *a, float *b);
@@ -87,11 +90,19 @@ void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
 											   float *eu,
 											   float *ev,
                          float *ret);         // ret: Faktoren für die Schnittpunkt-Berechnung
-/// ---------------------------------------------------------------------------------------------
+
+/***********************************************************************************************
+ * @brief Get the max min off data
+ * 
+ * @param dat       float[3]
+ * @param anz_ele   Anzahl der dat Elemente
+ * @param offset 
+ * @param res 
+ */
 void get_max_min (float *dat, uint32_t anz_ele, uint32_t offset, float *res)
 {
-    res[0] = res[2] = res[4] = 1000000.0;    // min
-    res[1] = res[3] = res[5] = -1000000.0;   // max
+    res[0] = res[2] = res[4] = std::numeric_limits<float>::max(); // 1000000.0;    // min
+    res[1] = res[3] = res[5] = std::numeric_limits<float>::min(); // -1000000.0;   // max
 
     for (uint32_t n=0; n<anz_ele; n++) {
         uint32_t basis = n*offset;
@@ -119,7 +130,7 @@ float vec3dist (float *a, float *b)
     return ( vec3bertag(res) );
 }
 /// ---------------------------------------------------------------------------------------------
-void vec3print_vec (float *p, char endline)
+void vec3print_vec (float *p, const char *endline)
 {
     std::cout << p[0] << ", " << p[1] << ", " << p[2] << endline;
 }
@@ -135,7 +146,12 @@ void vec4print_vec (float *p)
     std::cout << p[0] << ", " << p[1] << ", " << p[2] << ", " << p[3] << std::endl;
 }
 /// ---------------------------------------------------------------------------------------------
-void vec3set (float x, float y, float z, float *res)
+void vec3set (const float wert, float *res)
+{
+  vec3set (wert, wert, wert, res);
+}
+/// ---------------------------------------------------------------------------------------------
+void vec3set (const float x, const float y, const float z, float *res)
 {
   res[0] = x;
   res[1] = y;
@@ -249,7 +265,8 @@ void vec3richtungs_cos (float *a, float *res)
 
 /// ---------------------------------------------------------------------------------------------
 float vec3bertag ( float *a ) {                     // Vektor Betrag
-  return sqrt( a[0]*a[0] + a[1]*a[1] + a[2]*a[2]);
+  float foo = a[0]*a[0] + a[1]*a[1] + a[2]*a[2];
+  return sqrt( foo );
 }
 
 /// ---------------------------------------------------------------------------------------------

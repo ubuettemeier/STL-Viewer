@@ -7,15 +7,17 @@
  *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.2"
+#define VERSION "v0.2.3"
 
 #define USE_FULL_SCREEN_
 
 #include <iostream>
 #include <iomanip>
+#include <limits>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
+// #include <glm/vec3.hpp>  // glm: c++ Vektorrechnung. Wird zur Zeit nicht benötigt. Es wird mat4.hpp genutzt.
 
 #include "basicelement.hpp"
 #include "stlcmd.hpp"
@@ -24,7 +26,7 @@ using namespace std;
 
 basics *basic;                  // class für Ursprung und Min-Max-Quader
 
-int src_w=500, src_h=500;
+int win_w=500, win_h=500;
 
 float eye[3] = {0.0, 0.0, 1.0f};        // camera Position
 float look_at[3] = {0.0, 0.0, 0.0};
@@ -36,6 +38,7 @@ float buf_eye[3], buf_look_at[3], buf_up[3];    // Wird in mouse_func() und mous
 bool strg_key = 0, shift = 0;
 bool button_0_down = 0;                 // mouse left button
 int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move() benötigt !!!
+int mouse_x = 0, mouse_y = 0;
 
 uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
 
@@ -100,6 +103,11 @@ void show_special_keys()
     cout << "        →|←|↑|↓ : rotation 15°\n";
     cout << "Shift + →|←|↑|↓ : rotation 90°\n";
     cout << " Strg + →|←|↑|↓ : move\n";
+    cout << "\n";
+    cout << "mouse left button        : rotation\n";
+    cout << "mouse wheel              : zoom\n";
+    cout << "Strg + mouse left button : move\n";
+    cout << "\n";
 }
 
 /******************************************************************
@@ -136,7 +144,7 @@ bool get_2D_from_3Dkoor (float *k, int &x, int &y)
                 viewport,
                 &u, &v, &w);
     x = u;
-    y = src_h - v;
+    y = win_h - v;
 
     return ret;
 }
@@ -152,7 +160,7 @@ bool get_3D_from_view (int x, int y, float *ret)
 {
     bool is_sell = true;
     float zbuf_tiefe;
-    int y_new = src_h - y -1;
+    int y_new = win_h - y -1;
 
     glReadPixels( x, y_new, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &zbuf_tiefe);     // Achtung: Y-Ursprung muß nach bottom gelegt werden !!!
 
@@ -164,7 +172,8 @@ bool get_3D_from_view (int x, int y, float *ret)
     glGetIntegerv(GL_VIEWPORT, viewport);               //viewport
 
     double u, v, w;
-	gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
+    gluUnProject(x, y_new, zbuf_tiefe, modelview, projection, viewport, &u, &v, &w);
+
     if (zbuf_tiefe == 1.0f) {
         is_sell = false;
         w = FLT_MAX;
@@ -249,8 +258,8 @@ static void glutResize(int w, int h)
     glLoadIdentity();
     gluPerspective (fovy, (float)w/(float)h, 0.1, stlcmd::obj_radius * 80);
 
-    src_w = w;
-    src_h = h;
+    win_w = w;
+    win_h = h;
 }
 
 /****************************************************************
@@ -388,7 +397,7 @@ void specialkey( int key, int x, int y)
                 vec3Normalize (up);
                 vec3Cross (foo, up, n);
                 vec3Normalize (n);
-                float faktor = (key == 100) ? 20.0f : -20.0f;
+                float faktor = (key == 100) ? 20.0f : -20.0f;               // Bewegungsrichtung festlegen !
                 vec3add_vec_mul_fakt (eye, n, stlcmd::obj_radius / faktor, eye);
                 vec3add_vec_mul_fakt (look_at, n, stlcmd::obj_radius / faktor, look_at);
             }
@@ -414,7 +423,7 @@ void specialkey( int key, int x, int y)
                 vec3sub (upp, eye, up);         // up neu berechnen
             }
             if (strg_key) {         // move cam top down
-                float faktor = (key == 103) ? 20.0f : -20.0f;
+                float faktor = (key == 103) ? 20.0f : -20.0f;           // Bewegungsrichtung festlegen !
                 vec3Normalize (up);
                 vec3add_vec_mul_fakt (eye, up, stlcmd::obj_radius / faktor, eye);
                 vec3add_vec_mul_fakt (look_at, up, stlcmd::obj_radius / faktor, look_at);
@@ -484,6 +493,9 @@ void mouse_move (int x, int y)
     static double alpha = 0.0f;      // in [rad]
     static double dist = 0.0f;
 
+    mouse_x = x;
+    mouse_y = y;
+
     if (button_0_down) {
         if (strg_key) {                 // Move Camera
             double dx = x - last_mx;
@@ -501,7 +513,7 @@ void mouse_move (int x, int y)
             vec3Normalize (up);
             vec3Cross (up, foo, n);     
 
-            float faktor = stlcmd::obj_radius/240.0f;
+            float faktor = stlcmd::obj_radius / 240.0f;     // 240.0f ist willkürlich. Hier ist noch Handlungsbedarf !!!
             vec3add_vec_mul_fakt (eye, up, dy*faktor, eye);
             vec3add_vec_mul_fakt (eye, n, dx*faktor, eye);
 
@@ -572,9 +584,13 @@ void mouse_move (int x, int y)
  */
 void passive_mouse_move (int x, int y)
 {
+    mouse_x = x;
+    mouse_y = y;
+
     /**** Funktionalität wird noch nicht benötigt ******
     float foo[3];
     get_3D_from_view (x, y, foo);
+    vec3print_vec ("foo=", foo);
     */
 }
 
@@ -604,12 +620,12 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
 
 #ifdef USE_FULL_SCREEN    
-    src_w = glutGet ( GLUT_SCREEN_WIDTH );
-    src_h = glutGet ( GLUT_SCREEN_HEIGHT );
+    win_w = glutGet ( GLUT_SCREEN_WIDTH );      // get screen width
+    win_h = glutGet ( GLUT_SCREEN_HEIGHT );     // get screen height
 #endif
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(0,0);
-    glutInitWindowSize (src_w, src_h);
+    glutInitWindowSize (win_w, win_h);
 
     char buf[80];
     sprintf (buf, "STL-Viewer %s", VERSION);
