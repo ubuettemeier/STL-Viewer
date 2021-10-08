@@ -81,6 +81,7 @@ void help()
     cout << "v : Vorderansicht XY-plane\n";
     cout << "d : Draufsicht XZ-plane\n";
     cout << "s : Seitenansicht von links YZ-plane\n";
+    cout << "o : optimiere Normal-Vektoren\n";
     cout << "\n";
 }
 
@@ -306,6 +307,10 @@ void keyboard( unsigned char key, int x, int y)
                 stlcmd::allstl[i]->set_color (0.9, 0, 0, 1);
             break;
         */
+        case 'o': {
+                stlcmd::optimise_all_normal_vec(); 
+            }
+            break;
         case 'h':
             help();
             break;

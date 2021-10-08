@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.17
+ * @version v0.0.18
  * @date 2021-09-12
  */
 
@@ -51,6 +51,7 @@ public:
     uint8_t get_draw_mode ();
     void set_color (float *c);
     void set_color (float r, float g, float b, float a);
+    void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
 
 // ------------- static functions ------------------------------
     static void *operator new (std::size_t size);
@@ -58,6 +59,7 @@ public:
     static void init_stlcmd();
     static void clear_allstl();
     static uint64_t get_anz_all_triangle();
+    static void optimise_all_normal_vec();      // Funktion optimiert den Normalvektor. 
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -69,6 +71,7 @@ private:
     void calc_max_r();
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
     void make_line_vertex();
+    void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
     void make_triangle_center();
 
     uint32_t id;    
@@ -222,7 +225,8 @@ void stlcmd::clear_allstl()
 }
 
 /**************************************************************
- * @brief   Function ermittelt Anzahl aller triangles
+ * @brief   static uint64_t get_anz_all_triangle();
+ *          Function ermittelt Anzahl aller triangles
  */
 uint64_t stlcmd::get_anz_all_triangle()
 {
@@ -263,6 +267,120 @@ void stlcmd::set_color (float r, float g, float b, float a)
 {
     float foo[4] = {r, g, b, a};
     set_color (foo);
+}
+
+/********************************************************
+ * 
+ */
+void stlcmd::show_fortschritt_prozent_step (uint32_t &counter, bool set_zero, int step_width_prozent)
+{
+    static int status = 0;  // 0%
+    static int step_width = 5;
+    static int zei_index = 0;
+    char zei[5] = {"-\\|/"};
+
+    if (set_zero) {
+        status = 0;
+        step_width = step_width_prozent;
+        cout << "\n";
+        return;
+    }
+
+    counter = 0;
+    status += step_width;
+
+    if (status <= 100) {
+        cout << zei[zei_index] << " " << status << "%  \r";
+        cout.flush();
+        if (++zei_index > 3) zei_index = 0;
+    }
+}
+
+/***************************************************************
+ * @brief   Funktion optimiert den Normalvektor. 
+ *          Wenn der Schnittwinkel 2er Fächen kleiner als 45° ist, 
+ *          wird für den Normalvektor ein Mittelwert berechnet.
+ */
+void stlcmd::optimise_normal_vec()
+{
+    std::vector<bool> is_use(stlvec.size());
+    std::vector< std::vector<uint32_t> > index;
+    std::vector< uint32_t > w;
+    uint32_t counter = 0;
+    uint64_t anz = 0;
+    uint64_t soll = 0;
+
+    // Werte für Fortschrittsanzeige berechnen.
+    soll = (stlvec.size()/3) * (stlvec.size()/3);
+    soll *= 0.77;
+    soll *= 0.05;   // 5% Fortschrittsanzeige
+    show_fortschritt_prozent_step (counter, true, 5);  // Fortschrittsanzeige initialisieren
+
+    for (size_t n=0; n<is_use.size(); n++)      // Alle Vertexe als noch nicht bearbeitet kennzeichnen.
+        is_use[n] = false;
+
+    for (size_t n=0; n<stlvec.size()-1; n++) {
+        if (is_use[n] == false) {
+            is_use[n] = true;
+            w.clear();
+            w.push_back(n);
+            for (size_t i=n+1; i<stlvec.size(); i++) {
+                anz++;
+                if (is_use[i] == false) {
+                    if (vec3_equal (stlvec[n].v, stlvec[i].v)) {
+                        is_use[i] = true;       // Vertexe als bearbeitet kennzeichnen.
+                        w.push_back(i);
+                    }
+                }
+                if (++counter > soll)          // Forschrittsanzeige
+                    show_fortschritt_prozent_step (counter);
+            }
+            index.push_back(w);
+        }
+    }
+    
+    for (size_t n=0; n<index.size(); n++) {
+        w.clear();
+        w = index[n];
+        bool do_optimize = true;
+
+        if (w.size() > 1) {
+            for (size_t i=0; i<w.size()-1; i++) {
+                for (size_t n=i+1; n<w.size(); n++) {
+                    float alpha = vec3alpha (stlvec[w[i]].n, stlvec[w[n]].n);
+                    if (alpha > 0.8f)           // Vektorwinkel > 0,8 rad (45°)
+                        do_optimize = false;
+                }
+            }
+
+            if (do_optimize) {
+                float foo[3] = {0.0f};
+                for (size_t i=0; i<w.size(); i++) 
+                    vec3add (foo, stlvec[w[i]].n, foo);
+
+                vec3mul_faktor (foo, 1.0f/w.size(), foo);
+
+                for (size_t i=0; i<w.size(); i++) 
+                    vec3copy (foo, stlvec[w[i]].n);
+            }
+        }
+    }
+
+    if (vboID[0] != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+    }
+    cout << "\n";
+}
+
+/******************************************************************
+ * @brief   static void optimise_all_normal_vec();
+ */
+void stlcmd::optimise_all_normal_vec()
+{
+    for (size_t i=0; i<allstl.size(); i++) {
+        allstl[i]->optimise_normal_vec();   
+    }
 }
 
 /**********************************************************
