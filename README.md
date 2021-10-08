@@ -21,6 +21,7 @@ f : Model einpassen (fit in)
 v : Vorderansicht XY-plane
 d : Draufsicht XZ-plane
 s : Seitenansicht von links YZ-plane
+o : optimiere Normal-Vektoren
 </pre>
 <pre>
 ---- special key's ----
