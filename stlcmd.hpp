@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.19
+ * @version v0.0.20
  * @date 2021-09-12
  */
 
@@ -19,6 +19,7 @@
 #include <cstring>
 #include <cfloat>
 #include <limits>
+#include <time.h>               // contains clock()
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -72,6 +73,7 @@ private:
     void make_line_vertex();
     void make_triangle_center();
     void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
+    bool get_gleich_index (std::vector< std::vector<uint32_t> > &index, int n);
     void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
 
     uint32_t id;    
@@ -296,6 +298,25 @@ void stlcmd::show_fortschritt_prozent_step (uint32_t &counter, bool set_zero, in
     }
 }
 
+/*********************************************************************
+ * 
+ */
+bool stlcmd::get_gleich_index (std::vector< std::vector<uint32_t> > &index, int n)
+{
+    bool ret = false;
+    int i=index.size() - 1;
+
+    while ((i >= 0) && !ret) {      // Index-Liste rückwärts durchlaufen !
+        if (vec3_equal (stlvec[index[i][0]].v, stlvec[n].v)) {      // Sind Vektoren gleich ?
+            index[i].push_back(n);                                  // Vektor an Index-Listen[i] anhängen.
+            ret = true;
+        }
+        i--;
+    }
+
+    return ret;
+}
+
 /***************************************************************
  * @brief   Funktion optimiert den Normalvektor. 
  *          Wenn der Schnittwinkel 2er Fächen kleiner als 45° ist, 
@@ -307,38 +328,34 @@ void stlcmd::optimise_normal_vec()
     std::vector< std::vector<uint32_t> > index;
     std::vector< uint32_t > w;
     uint32_t counter = 0;
-    uint64_t anz = 0;
     uint64_t soll = 0;
 
+    // ----------- Zeitmessung starten -----------------
+    double time1=0.0, tstart;      // time measurment variables
+    tstart = clock();              // start 
+
     // Werte für Fortschrittsanzeige berechnen.
-    soll = (stlvec.size()/3) * (stlvec.size()/3);
-    soll *= 0.77;
-    soll *= 0.05;   // 5% Fortschrittsanzeige
+    soll = stlvec.size() * 0.05;   // 5% Fortschrittsanzeige
     show_fortschritt_prozent_step (counter, true, 5);  // Fortschrittsanzeige initialisieren
 
-    for (size_t n=0; n<is_use.size(); n++)      // Alle Vertexe als noch nicht bearbeitet kennzeichnen.
-        is_use[n] = false;
-
-    // ---------------------- gleiche vertexe finden -----------------------
-    for (size_t n=0; n<stlvec.size()-1; n++) {
-        if (is_use[n] == false) {
-            is_use[n] = true;
-            w.clear();
-            w.push_back(n);
-            for (size_t i=n+1; i<stlvec.size(); i++) {
-                anz++;
-                if (is_use[i] == false) {
-                    if (vec3_equal (stlvec[n].v, stlvec[i].v)) {
-                        is_use[i] = true;       // Vertexe als bearbeitet kennzeichnen.
-                        w.push_back(i);
-                    }
-                }
-                if (++counter > soll)          // Forschrittsanzeige
-                    show_fortschritt_prozent_step (counter);
-            }
-            index.push_back(w);
+    // ---------------------- gleiche vertexe finden ----------------------
+    for (size_t n=0; n<stlvec.size(); n++) {
+        if (!get_gleich_index(index, n)) {      // Index-Liste nach gleichen Vektor durchsuchen.
+            std::vector<uint32_t> w;
+            w.push_back (n);
+            index.push_back (w);
         }
+
+        if (++counter > soll)          // Forschrittsanzeige
+            show_fortschritt_prozent_step (counter);
     }
+    cout << endl;
+    
+    // ----------- Zeitmessung stopen -----------------
+    time1 += clock() - tstart;              // time measurment end
+    time1 = time1/CLOCKS_PER_SEC;           // rescale to seconds
+    cout << "  time = " << time1 << " sec." << endl;        // Zeit ausgeben
+
     // -------------------------- Normalvectoren Mittelwert berechnen ------------------
     for (size_t n=0; n<index.size(); n++) {
         w.clear();
@@ -636,8 +653,8 @@ void stlcmd::get_min_max_center()
 void stlcmd::calc_max_r()
 {
     float foo[3];
+
     vec3sub (max_ges, center_ges, foo);
-    vec3print_vec ("foo=", foo);
     stlcmd::obj_radius = vec3bertag (foo);
 }
 

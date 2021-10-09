@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.3.0"
+#define VERSION "v0.3.1"
 
 #define USE_FULL_SCREEN_
 

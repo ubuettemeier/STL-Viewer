@@ -1,7 +1,7 @@
 ## STL-Viewer
 simple STL File Viewer
-<p>usage: ./stlviewer  file, ...<br>
-example: ./stlviewer  STL_data/baby-tux_bin.STL</p>
+<pre>usage: ./stlviewer  file, ...
+example: ./stlviewer  STL_data/baby-tux_bin.STL</pre>
 --- Entwicklungsumgebung ---
 
 - Linux Ubuntu 20.04.1
