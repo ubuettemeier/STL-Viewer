@@ -3,11 +3,9 @@
  * @brief simple STLViewer
  * @author Ulrich Buettemeier
  * @date 2021-09-12
- * @todo mouse move Funktion muss optimiert werden.
- *       Hierzu die Funktionen get_3D_from_view() und get_2D_from_3Dkoor() verwenden.
  */
 
-#define VERSION "v0.2.5"
+#define VERSION "v0.3.0"
 
 #define USE_FULL_SCREEN_
 
@@ -208,7 +206,10 @@ void init_scene()
     glCullFace( GL_BACK );
     glEnable ( GL_ALPHA_TEST );
 
-    glEnable( GL_BLEND );
+    glEnable( GL_BLEND );   // Farbmischung einschalten
+    // --- glBlendFunc beeinflusst das Mischen der Farben im Framebuffer
+    // --- s.a. https://wiki.delphigl.com/index.php/glBlendFunc
+
     // glBlendFunc(GL_DST_COLOR, GL_SRC_COLOR);
     // glBlendFunc(GL_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -476,10 +477,9 @@ void mouse_func (int button, int state, int x, int y)
                 if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {  // Nachschauen, ob ein Element gepickt wurde.
                     vec3copy (foo, pick_buf.pv);    
                 }
-            } else {    // button 0 up
-                // cout << "button up\n";
+            } else      // button 0 up
                 glutSetCursor( GLUT_CURSOR_RIGHT_ARROW );
-            }
+
             break;
         case 3:     // wheel scrool down
         case 4: {   // wheel scroll up
@@ -548,7 +548,7 @@ void mouse_move (int x, int y)
         } else {                        // Rotate Camera
             double dx = x - last_mx;
             double dy = y - last_my;
-            dist = sqrtf64(dx*dx + dy*dy);
+            dist = sqrt(dx*dx + dy*dy);
             
             if (dx != 0) {
                 alpha = atanf (dy / dx);

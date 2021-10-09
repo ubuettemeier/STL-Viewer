@@ -1,7 +1,7 @@
 
 CC = g++
 # --- gnu++11 uses GNU extensions. ---
-CFLAGS = --std=c++14
+CFLAGS = --std=c++1y	# --std=c++14
 CFLAGS += -Wall -c -O0 -DNDEBUG
 
 LDFLAGS += -lGL -lGLU -lglut -lGLEW 

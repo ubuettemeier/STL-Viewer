@@ -5,7 +5,7 @@ example: ./stlviewer  STL_data/baby-tux_bin.STL</p>
 --- Entwicklungsumgebung ---
 
 - Linux Ubuntu 20.04.1
-- gcc c++14
+- gcc c++1y
 - OpenGL Version= 4.6 (Compatibility Profile) Mesa 21.0.3
 
 <pre>

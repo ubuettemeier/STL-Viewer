@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.12
+ * @version v0.0.13
  * @date 2021-08-26
  */
 
@@ -55,7 +55,7 @@ void vec3mul_faktor (float *a, float f, float *res); // res = a * f
 void vec3add_vec_mul_fakt ( float *a, float *b, float f, float *res );      // res = a + b*f
 void vec3Cross( float *a, float *b, float *res);   // Kreuzprodukt
 float vec3scalar( float *a, float *b);             // Scalarprodukt
-float vec3alpha (float *a, float *b);              // // Winkel zwische 2 Vectoren; return  alpha in rad
+float vec3alpha (float *a, float *b);              // Schnittwinkel zweier Vektoren; return  alpha in rad
 void vec3Normalize(float *a);                      // Einsvektor
 
 void mat4print (float *m);
@@ -311,10 +311,12 @@ void vec3Cross( float *a, float *b, float *res) {   // Kreuzprodukt
 float vec3scalar( float *a, float *b) {   // Scalarprodukt
   return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }  
-/// ---------------------------------------------------------------------------------------------
-/// @return  alpha in rad
-/// 
-float vec3alpha (float *a, float *b) {           // Winkel zwische 2 Vectoren; return  alpha in rad
+
+/***********************************************************************************************
+ * @brief   Funktion berechnet Schnittwinkel zweier Vektoren
+ * @return  alpha in rad
+ */
+float vec3alpha (float *a, float *b) {
   float nenner = vec3bertag(a) * vec3bertag(b);
   float zaehler = vec3scalar (a, b);
 

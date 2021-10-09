@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.18
+ * @version v0.0.19
  * @date 2021-09-12
  */
 
@@ -51,7 +51,6 @@ public:
     uint8_t get_draw_mode ();
     void set_color (float *c);
     void set_color (float r, float g, float b, float a);
-    void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
 
 // ------------- static functions ------------------------------
     static void *operator new (std::size_t size);
@@ -71,8 +70,9 @@ private:
     void calc_max_r();
     void get_min_max_center_ges();      // berechnet den Gesamt Schwerpunkt.
     void make_line_vertex();
-    void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
     void make_triangle_center();
+    void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
+    void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
 
     uint32_t id;    
     string filename;
@@ -319,6 +319,7 @@ void stlcmd::optimise_normal_vec()
     for (size_t n=0; n<is_use.size(); n++)      // Alle Vertexe als noch nicht bearbeitet kennzeichnen.
         is_use[n] = false;
 
+    // ---------------------- gleiche vertexe finden -----------------------
     for (size_t n=0; n<stlvec.size()-1; n++) {
         if (is_use[n] == false) {
             is_use[n] = true;
@@ -338,7 +339,7 @@ void stlcmd::optimise_normal_vec()
             index.push_back(w);
         }
     }
-    
+    // -------------------------- Normalvectoren Mittelwert berechnen ------------------
     for (size_t n=0; n<index.size(); n++) {
         w.clear();
         w = index[n];
@@ -358,14 +359,14 @@ void stlcmd::optimise_normal_vec()
                 for (size_t i=0; i<w.size(); i++) 
                     vec3add (foo, stlvec[w[i]].n, foo);
 
-                vec3mul_faktor (foo, 1.0f/w.size(), foo);
+                vec3mul_faktor (foo, 1.0f/w.size(), foo);   // Mittelwert berechnen
 
                 for (size_t i=0; i<w.size(); i++) 
                     vec3copy (foo, stlvec[w[i]].n);
             }
         }
     }
-
+    // --------------------- vertex Daten im Buffer ablegen ----------------------------
     if (vboID[0] != 0) {
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
