@@ -5,9 +5,10 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.3.1"
+#define VERSION "v0.3.2"
 
-#define USE_FULL_SCREEN_
+// Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
+// #define USE_FULL_SCREEN
 
 #include <iostream>
 #include <iomanip>
@@ -22,7 +23,7 @@
 
 using namespace std;
 
-basics *basic;                  // class für Ursprung und Min-Max-Quader
+basics *basic;                  // class für Ursprung, Min-Max-Quader und Hauptebenen
 
 int win_w=500, win_h=500;
 
@@ -80,6 +81,7 @@ void help()
     cout << "d : Draufsicht XZ-plane\n";
     cout << "s : Seitenansicht von links YZ-plane\n";
     cout << "o : optimiere Normal-Vektoren\n";
+    cout << "c : draw Flächenrückseite (back face) on/off\n";
     cout << "\n";
 }
 
@@ -96,8 +98,7 @@ void show_options()
  * @brief   show special key's
  */
 #define LEERSTELLEN 20
-void show_special_keys()
-{
+void show_special_keys(){
     cout << "            +/- : zoom\n";
     cout << "        →|←|↑|↓ : rotation 15°\n";
     cout << "Shift + →|←|↑|↓ : rotation 90°\n";
@@ -302,15 +303,19 @@ void keyboard( unsigned char key, int x, int y)
             delete basic;
             glutDestroyWindow(glutGetWindow ());
             break;
-        /*
-        case 'q':       // 'q' use for test's
-            for (size_t i=0; i<stlcmd::allstl.size(); i++)
-                stlcmd::allstl[i]->set_color (0.9, 0, 0, 1);
-            break;
-        */
-        case 'o': {
-                stlcmd::optimise_all_normal_vec(); 
+        case 'q': {      // 'q' use for test'
+            
+            } break;
+        case 'c': {     // draw Flächenrückseite (back face) on/off
+            GLboolean foo;
+            glGetBooleanv (GL_CULL_FACE, &foo);
+            foo ? glDisable ( GL_CULL_FACE ) : glEnable ( GL_CULL_FACE );
+            glGetBooleanv (GL_CULL_FACE, &foo);
+            cout << "draw back face= " << (foo ? "false" : "true") << endl;
             }
+            break;
+        case 'o': 
+            stlcmd::optimise_all_normal_vec(); 
             break;
         case 'h':
             help();
@@ -319,14 +324,15 @@ void keyboard( unsigned char key, int x, int y)
             show_special_keys();
             break;
         case '-':           // zoom kleiner
-        case '+': {         // zoom größer
-            float r[3];     // Richtung
-            vec3sub (look_at, eye, r);
-            vec3Normalize (r);
-            float faktor = (key=='+') ? 5.0f : -5.0f;
-            vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
-            vec3add (eye, r, eye);
-            vec3add (look_at, r, look_at);
+        case '+':           // zoom größer
+            if (!shift && !strg_key) {
+                float r[3];     // Richtung
+                vec3sub (look_at, eye, r);
+                vec3Normalize (r);
+                float faktor = (key=='+') ? 5.0f : -5.0f;
+                vec3mul_faktor (r, stlcmd::obj_radius/faktor, r);
+                vec3add (eye, r, eye);
+                vec3add (look_at, r, look_at);
             }
             break;
         case 't':       // draw triangle

@@ -2,13 +2,14 @@
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
  * @version v0.0.20
- * @date 2021-09-12
+ * @date 2021-09-13
  */
 
 #ifndef STLCMD_HPP
 #define STLCMD_HPP
 
-#define SHOW_CONTROL_TEXT_
+// mit SHOW_CONTROL_TEXT lassen sich Kontroll-Texte anzeigen
+// #define SHOW_CONTROL_TEXT
 
 #define MEM(x) ((float*) malloc (sizeof(float)*(x)))
 #define ANZ_OBJ 3
@@ -35,7 +36,7 @@ using namespace std;
 //!         uint8_t[80]     - Dateikopf (Header)
 //!         uint32_t        - Anzahl Dreiecke
 //!
-//!         struct _stl_bin_triangle_   - Triangle Struktur
+//!         struct _stl_bin_triangle_   - Triangle Struktur (s. stldev.h)
 //! ----------------------------------------------------------
 
 class stlcmd {
@@ -494,15 +495,25 @@ bool stlcmd::read_stl (std::string fname)
     }
     
     if (load_type == 1) {
-        return read_tex_stl (fname);
+        return read_tex_stl (fname);    // STL Textformat einlesen
     } else if (load_type == 2) 
-        return read_bin_stl (fname);
+        return read_bin_stl (fname);    // STL Binärformat einlesen
 
     return false;
 }
 
 /*******************************************************************
  * @brief   bool stlcmd::read_tex_stl (std::string fname)
+ * 
+ *          STL Textformal structur
+ * 
+ *          facet normal 0.354367 -0.935106 -8.67098e-08
+ *              outer loop
+ *                  vertex 26.5353 -16.5146 4.41006
+ *                  vertex 25.6167 -16.8627 4.12641
+ *                  vertex 27.3123 -16.2202 3.95025
+ *              endloop
+ *          endfacet
  */
 bool stlcmd::read_tex_stl (std::string fname)
 {

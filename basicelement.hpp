@@ -2,7 +2,7 @@
  * @file basicelement.hpp
  * @author Ulrich Büttemeier
  * @brief basics zeigt Koordiatenkreuz, Max-Quader, ....
- * @version v0.0.6
+ * @version v0.0.7
  * @date 2021-09-15
  */
 
@@ -294,10 +294,12 @@ void basics::display()
     }
 
     if (hauptebe_vaoID[0] != 0) {
+        GLboolean foo;
+        glGetBooleanv (GL_CULL_FACE, &foo);
         glDisable ( GL_CULL_FACE );
         glBindVertexArray(hauptebe_vaoID[0]);             // bind pyramid VAO
         glDrawArrays(GL_QUADS, 0, max_quader.size());   // render data
-        glEnable ( GL_CULL_FACE );
+        foo ? glEnable ( GL_CULL_FACE ) : glDisable ( GL_CULL_FACE );
     }
 
     glEnable (GL_LIGHTING);

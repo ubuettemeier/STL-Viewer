@@ -22,6 +22,7 @@ v : Vorderansicht XY-plane
 d : Draufsicht XZ-plane
 s : Seitenansicht von links YZ-plane
 o : optimiere Normal-Vektoren
+c : draw Flächenrückseite (back face) on/off
 </pre>
 <pre>
 ---- special key's ----
