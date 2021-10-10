@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.3.2"
+#define VERSION "v0.3.3"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -37,9 +37,9 @@ float buf_eye[3], buf_look_at[3], buf_up[3];    // Wird in mouse_func() und mous
 bool strg_key = 0, shift = 0;
 bool button_0_down = 0;                 // mouse left button
 int last_mx=-1, last_my=-1;             // Wird in mouse_func() und mouse_move() benötigt !!!
-int mouse_x = 0, mouse_y = 0;
+int mouse_x = 0, mouse_y = 0;           // globale Variable für Mausposition
 
-uint8_t system_is_going_down = 0;       // look at timer(), keyboard()
+uint8_t system_is_going_down = 0;       // wird benötigt in timer(), keyboard()
 
 struct _pick_buf_ pick_buf = {false, 0, 0, 0};  // Zeigt an, ob und wo ein Element gepickt wurde. Wird in mouse_func() und mouse_move() verwendet.
 
@@ -82,6 +82,9 @@ void help()
     cout << "s : Seitenansicht von links YZ-plane\n";
     cout << "o : optimiere Normal-Vektoren\n";
     cout << "c : draw Flächenrückseite (back face) on/off\n";
+    cout << "\n";
+    cout << "0 : Light 0 on/off\n";
+    cout << "1 : Light 1 on/off\n";
     cout << "\n";
 }
 
@@ -206,6 +209,7 @@ void init_scene()
     glFrontFace( GL_CCW );
     glCullFace( GL_BACK );
     glEnable ( GL_ALPHA_TEST );
+    glLightModeli ( GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE );
 
     glEnable( GL_BLEND );   // Farbmischung einschalten
     // --- glBlendFunc beeinflusst das Mischen der Farben im Framebuffer
@@ -216,17 +220,27 @@ void init_scene()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // glBlendFunc(GL_ONE, GL_ONE);
     
+    // ----------- Material -----------------
     GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
 
+    // ----------- Light 0 ---------------------
     GLfloat light0_position[] = {10000.0f, 10000.0f, 20000.0f, 1.0f};
-    GLfloat light0_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+    // GLfloat light0_diffuse[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat light0_diffuse[] = {0.8, 0.8, 0.8, 1.0};
     
     glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
     glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
 
+    // ----------- Light 1 ---------------------
+    GLfloat light1_position[] = {-10000.0f, 10000.0f, 20000.0f, 1.0f};
+    GLfloat light1_diffuse[] = {0.4, 0.4, 0.4, 1.0};
+    
+    glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
+    glLightfv(GL_LIGHT1, GL_DIFFUSE, light1_diffuse);
+    /*
     GLfloat light1_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
     GLfloat light1_diffuse[] = { 1.0, 1.0, 1.0, 1.0 };
     GLfloat light1_specular[] = { 1.0, 1.0, 1.0, 1.0 };
@@ -245,10 +259,11 @@ void init_scene()
     glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 45.0);
     glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spot_direction);
     glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0);
-
-    glEnable(GL_LIGHTING);
+    */
+    
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
+    glEnable(GL_LIGHTING);
 }
 
 /**********************************************************************
@@ -271,7 +286,10 @@ static void glutResize(int w, int h)
  */
 static void glutDisplay()
 {
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.15f, 0.15f, 0.15f, 1.0f);
+    if (!glIsEnabled (GL_LIGHT0))
+        glClearColor(0.7f, 0.7f, 0.7f, 1.0f);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glMatrixMode(GL_MODELVIEW);
@@ -313,6 +331,14 @@ void keyboard( unsigned char key, int x, int y)
             glGetBooleanv (GL_CULL_FACE, &foo);
             cout << "draw back face= " << (foo ? "false" : "true") << endl;
             }
+            break;
+        case '0':   // Light 0 on/off
+            glIsEnabled (GL_LIGHT0) ? glDisable(GL_LIGHT0) : glEnable(GL_LIGHT0);
+            cout << "Light0 = " << (glIsEnabled (GL_LIGHT0) ? "on" : "off") << " Light1 = " << (glIsEnabled (GL_LIGHT1) ? "on" : "off") << endl;
+            break;
+        case '1':   // Light 1 on/off
+            glIsEnabled (GL_LIGHT1) ? glDisable(GL_LIGHT1) : glEnable(GL_LIGHT1);
+            cout << "Light0 = " << (glIsEnabled (GL_LIGHT0) ? "on" : "off") << " Light1 = " << (glIsEnabled (GL_LIGHT1) ? "on" : "off") << endl;
             break;
         case 'o': 
             stlcmd::optimise_all_normal_vec(); 

@@ -23,6 +23,9 @@ d : Draufsicht XZ-plane
 s : Seitenansicht von links YZ-plane
 o : optimiere Normal-Vektoren
 c : draw Flächenrückseite (back face) on/off
+
+0 : Light 0 on/off
+1 : Light 1 on/off
 </pre>
 <pre>
 ---- special key's ----
