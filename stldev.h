@@ -35,9 +35,14 @@ struct _vertex_only_ {
     float v[3];
 };
 
-struct _pick_buf_ {
-    bool ist_aktiv;
-    float pv[3];
+struct _pick_buf_ {     // pv[] wird mit <get_3D_from_view()> ermittelt. S.auch <mouse_func()>
+    bool ist_aktiv;     // false: mouse-pick hat keine Geometrie getroffen. true: mouse-pick hat Geometrie getroffen
+    float pv[3];        // Enthält die 3D-Koordinaten vom Pick-Punkt !!!
+};
+
+struct _select_buf_ {   // Liste der gepickten Flächen !
+    void *p_to_stlcmd;
+    long unsigned int index;
 };
 
 #pragma pack()

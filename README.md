@@ -12,6 +12,7 @@ example: ./stlviewer  STL_data/baby-tux_bin.STL</pre>
 ---- Keyboard shortcuts ----
 
 h : this message
+q : quit
 k : show special key's
 t : draw triangles ON/OFF
 l : draw lines ON/OFF
@@ -26,6 +27,8 @@ c : draw Flächenrückseite (back face) on/off
 
 0 : Light 0 on/off
 1 : Light 1 on/off
+
+ESC : clear select buffer
 </pre>
 <pre>
 ---- special key's ----
@@ -38,6 +41,8 @@ Shift + →|←|↑|↓ : rotation 90°
        mouse left button : rotation
              mouse wheel : zoom
 Strg + mouse left button : move
+
+Shift + mouse left button : select triangle
 </pre>
 <hr></hr>
 

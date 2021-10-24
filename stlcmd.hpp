@@ -61,6 +61,8 @@ public:
     static void clear_allstl();
     static uint64_t get_anz_all_triangle();
     static void optimise_all_normal_vec();      // Funktion optimiert den Normalvektor. 
+    static void grep_triangle (float *v, std::vector <struct _select_buf_> &selbuf);  // Das selectierte Dreieck wird in selbuf eingetragen !
+    static void clear_sel_buf (std::vector <struct _select_buf_> &selbuf);      // Die Dreiecks-Selection wird aufgehoben
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -76,6 +78,7 @@ private:
     void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
     bool get_gleich_index (std::vector< std::vector<uint32_t> > &index, int n);
     void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
+    bool grep_stl_triangle (float *v, float &min_dist, std::vector <struct _select_buf_> &selbuf);
 
     uint32_t id;    
     string filename;
@@ -144,7 +147,7 @@ stlcmd::stlcmd (string fname)
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);        // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
 
-        int stride = sizeof(struct _vertex_);           // int stride = sizeof(Vertex);
+        int stride = sizeof(struct _vertex_);           // (3+3+4) * float
         char *offset = (char*)NULL;
 
         glVertexPointer(3, GL_FLOAT, stride, offset);   // position  3*float
@@ -402,6 +405,136 @@ void stlcmd::optimise_all_normal_vec()
     }
 }
 
+/********************************************************************
+ * @brief   dies ist ein Versuch eine Fläche zu picken !!!
+ */
+struct _hilfs_container_ {
+    long unsigned int i;
+    double f0;
+};
+
+/***********************************************************************
+ * @brief Get the min hc object
+ */
+struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc)
+{
+    struct _hilfs_container_ ret;
+    double min = 999999999.9f;
+
+    for (size_t i=0; i<hc.size(); i++) {
+        if (fabs(1.0f - hc[i].f0) < min) {
+            ret = hc[i];
+            min = fabs (1.0f - ret.f0);
+        }
+    }
+
+    return ret;
+}
+/************************************************************************
+ * @brief 
+ */
+bool stlcmd::grep_stl_triangle (float *v, float &min_dist, std::vector <struct _select_buf_> &selbuf)
+{
+    bool ret = 0;
+    float ab[3], ac[3];
+    int counter = 0;
+    double m0;
+    double f[3];
+    std::vector <struct _hilfs_container_> hc;      // Trefferliste
+
+    for (size_t i=0; i<stlvec.size(); i+=3) {
+        vec3sub (stlvec[i+1].v, stlvec[i].v, ab);
+        vec3sub (stlvec[i+2].v, stlvec[i].v, ac);
+
+        m0 = DET_3A (stlvec[i].v[0], ab[0], ac[0],
+                     stlvec[i].v[1], ab[1], ac[1],
+                     stlvec[i].v[2], ab[2], ac[2]);
+
+        if (m0 != 0.0f) {
+            f[0] = DET_3A (v[0], ab[0], ac[0],
+                           v[1], ab[1], ac[1],
+                           v[2], ab[2], ac[2]);
+            f[0] /= m0;
+            // cout << f[0] << endl;
+            if ((f[0] > 0.97f) && (f[0] < 1.03)) {              // Im Idealfall beträgt f[0] == 1.0f
+                f[1] = DET_3A (stlvec[i].v[0], v[0], ac[0],
+                            stlvec[i].v[1], v[1], ac[1],
+                            stlvec[i].v[2], v[2], ac[2]);
+                f[2] = DET_3A (stlvec[i].v[0], ab[0], v[0],
+                            stlvec[i].v[1], ab[1], v[1],
+                            stlvec[i].v[2], ab[2], v[2]);
+
+                f[1] /= m0;
+                f[2] /= m0;
+                if ((f[1] >= 0.0) && (f[1] <= 1.0) &&
+                    (f[2] >= 0.0) && (f[2] <= 1.0) &&
+                    ((f[1]+f[2]) <= 1.0)) {
+                        hc.push_back( {i, f[0] } );     // Dreieck in die Trefferliste eintragen.
+                        counter++;
+                        // cout << "f[0]=" << f[0] << endl;
+                }
+            }
+        } 
+    }
+
+    // -------------- Es sind flächen gefunden worden ---------------------------
+    if (hc.size()) {
+
+        struct _hilfs_container_ foo;
+        if (hc.size() == 1)
+            foo = hc[0];
+        else 
+            foo = get_min_hc (hc);      // Dreieck mit dem genausten f[0] finden !
+
+        // cout << "Anzahl Treffer: " << counter << " f[0]=" << foo.f0 << endl;
+
+        vec4set(1, 0, 0, 1, stlvec[foo.i].c);
+        vec4set(1, 0, 0, 1, stlvec[foo.i+1].c);
+        vec4set(1, 0, 0, 1, stlvec[foo.i+2].c);
+
+        ret = 1;
+        selbuf.push_back ( {this, foo.i} );
+
+        if (vboID[0] != 0) {
+            glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+            glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+        }
+    }
+
+    return ret;
+}
+
+/****************************************************************
+ * @brief   Das selectierte Dreieck wird in selbuf eingetragen !
+ */
+void stlcmd::grep_triangle (float *v, std::vector <struct _select_buf_> &selbuf)
+{
+    float min_dist = 100000000.0f;
+
+    for (size_t i=0; i<allstl.size(); i++) {
+        if (allstl[i]->grep_stl_triangle ( v, min_dist, selbuf ))
+            cout << allstl[i]->filename << " Treffer\n";
+    }
+    // cout << min_dist << endl;
+}
+
+/************************************************************
+ * @brief   Die Dreiecks-Selection wird aufgehoben
+ */
+void stlcmd::clear_sel_buf (std::vector <struct _select_buf_> &selbuf)
+{
+    for (size_t i=0; i<selbuf.size(); i++) {
+        stlcmd *p = (stlcmd *) selbuf[i].p_to_stlcmd;
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index].c);
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+1].c);
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+2].c);
+
+        if (p->vboID[0] != 0) {
+            glBindBuffer(GL_ARRAY_BUFFER, p->vboID[0]);       // VBO 0
+            glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
+        }
+    }
+}
 /**********************************************************
  * @brief   draw OpenGL VBA's
  */
@@ -726,9 +859,9 @@ void stlcmd::make_triangle_center()
 {
     struct _vertex_only_ sum;
     for (size_t i=0; i<stlvec.size(); i+=3) {
-        vec3set (0, sum.v);
+        vec3set (0.0f, sum.v);
         for (int n=0; n<3; n++) 
-            vec3add (sum.v, stlvec[i+n].n, sum.v);
+            vec3add (sum.v, stlvec[i+n].v, sum.v);
 
         sum.v[0] /= 3.0f;
         sum.v[1] /= 3.0f;

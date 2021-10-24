@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.3.3"
+#define VERSION "v0.4.0"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -42,6 +42,7 @@ int mouse_x = 0, mouse_y = 0;           // globale Variable für Mausposition
 uint8_t system_is_going_down = 0;       // wird benötigt in timer(), keyboard()
 
 struct _pick_buf_ pick_buf = {false, 0, 0, 0};  // Zeigt an, ob und wo ein Element gepickt wurde. Wird in mouse_func() und mouse_move() verwendet.
+std::vector <struct _select_buf_> sel_buf;      // selected buffer
 
 // ----------- Prototypen -----------------
 void help();
@@ -71,6 +72,7 @@ void help()
 {
     cout << "---- Keyboard shortcuts ----\n";
     cout << "h : this message\n";
+    cout << "q : quit\n";
     cout << "k : show special key's\n";
     cout << "t : draw triangles ON/OFF\n";
     cout << "l : draw lines ON/OFF\n";
@@ -85,6 +87,8 @@ void help()
     cout << "\n";
     cout << "0 : Light 0 on/off\n";
     cout << "1 : Light 1 on/off\n";
+    cout << "\n";
+    cout << "ESC : clear select buffer\n";
     cout << "\n";
 }
 
@@ -110,6 +114,8 @@ void show_special_keys(){
     cout << "mouse left button        : rotation\n";
     cout << "mouse wheel              : zoom\n";
     cout << "Strg + mouse left button : move\n";
+    cout << "\n";
+    cout << "Shift + mouse left button : select triangle\n";
     cout << "\n";
 }
 
@@ -307,6 +313,7 @@ static void glutDisplay()
 
     glutSwapBuffers();
     glutReportErrors();
+    
 }
 
 /*******************************************************************
@@ -316,14 +323,14 @@ void keyboard( unsigned char key, int x, int y)
 {
     switch (key) {
         case 27:            // ESC
+            stlcmd::clear_sel_buf(sel_buf);
+            break;
+        case 'q':           // quit
             system_is_going_down = 1;
             stlcmd::clear_allstl();         // clear all stl-data
             delete basic;
             glutDestroyWindow(glutGetWindow ());
             break;
-        case 'q': {      // 'q' use for test'
-            
-            } break;
         case 'c': {     // draw Flächenrückseite (back face) on/off
             GLboolean foo;
             glGetBooleanv (GL_CULL_FACE, &foo);
@@ -482,7 +489,7 @@ void specialkey( int key, int x, int y)
  */
 void key_up (int key, int x, int y) 
 {
-    // cout << key << endl;
+    // cout << "key_up: " << key << endl;
     switch (key) {
         case 112:           // SHIFT
             shift = 0;
@@ -490,26 +497,32 @@ void key_up (int key, int x, int y)
         case 114:           // STRG
             strg_key = 0;
             break;
-  }
+    }
 }
 
 /*************************************************************************************
  * @brief   callback by mouse-click's
+ * @param   button  0=links  1=wheel  2=rechts  3=wheel down  4=wheel up
+ * @param   state 0=gedrückt; 1=nicht gedrückt
  */
 void mouse_func (int button, int state, int x, int y)
 {
+    // cout << button << "|" << state << endl;
     switch (button) {
-        case 0:     // button 0 down
-            if ((button_0_down = (state == 0) ? 1 : 0)) {  // button down
+        case 0:     // button 0 down (left)
+            button_0_down = (state == 0) ? 1 : 0;
+            if (button_0_down) {  // left button is down
                 last_mx = x, last_my = y;
                 vec3copy (eye, buf_eye);            // Cam-Pos sichern. Wird in mouse_move() benötigt !!!
                 vec3copy (look_at, buf_look_at);
                 vec3copy (up, buf_up);
                 float foo[3];
                 if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {  // Nachschauen, ob ein Element gepickt wurde.
-                    vec3copy (foo, pick_buf.pv);    
+                    vec3copy (foo, pick_buf.pv); 
+                    if (shift)                                              // shift + left button => select triangle
+                        stlcmd::grep_triangle ( pick_buf.pv, sel_buf );     // select triangle => buffer
                 }
-            } else      // button 0 up
+            } else      // left button is up
                 glutSetCursor( GLUT_CURSOR_RIGHT_ARROW );
 
             break;

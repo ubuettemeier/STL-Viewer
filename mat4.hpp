@@ -83,7 +83,7 @@ float grad_to_rad (float grad);         // return rad
 float rad_to_grad (float rad);          // return grad
 
 float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
-void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
+bool schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
 											   float *gn,           
 											   float *ec,           // e: ec + ret[1]*eu + ret[2]*ev
 											   float *eu,
@@ -616,7 +616,7 @@ void mat4Rot_um_Achse (float *m, float *sp, float *ep, float alpha)
  *          g: gc + ret[0]*gn
  *          e: ec + ret[1]*eu + ret[2]*ev
  */
-void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
+bool schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
 											          float *gn,           
 											          float *ec,    // e: ec + ret[1]*eu + ret[2]*ev
 											          float *eu,
@@ -626,6 +626,7 @@ void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
   // float a[3];
   float q[3];
   double m0;
+  bool result_ok = false;
 
   vec3set (0.0f, 0.0f, 0.0f, ret);
   vec3sub (gc, ec, q);
@@ -645,7 +646,11 @@ void schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
     ret[0] /= m0;
     ret[1] /= m0;
     ret[2] /= m0;
+
+    result_ok = true;
   } 
+
+  return result_ok;
 }
 
 #endif
