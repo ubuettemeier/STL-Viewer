@@ -421,8 +421,8 @@ void stlcmd::optimise_all_normal_vec()
 void stlcmd::clear_all_sel_triagle()
 {
     for (size_t i=0; i<stlvec.size(); i+=3) {
-        if (stlvec[i].attribute.is_sel) {
-            stlvec[i].attribute.is_sel = 0;
+        if (stlvec[i].attribute & 0x0001) {
+            stlvec[i].attribute &= 0xFFFE;
             set_select_col (i);
         }
     }
@@ -438,7 +438,7 @@ void stlcmd::clear_all_sel_triagle()
  */
 void stlcmd::set_select_col (long unsigned int i)
 {
-    if (!stlvec[i].attribute.is_sel) {
+    if (!(stlvec[i].attribute & 0x0001)) {
         vec4set(col[0], col[1], col[2], col[3], stlvec[i].c);
         vec4set(col[0], col[1], col[2], col[3], stlvec[i+1].c);
         vec4set(col[0], col[1], col[2], col[3], stlvec[i+2].c);
@@ -525,7 +525,8 @@ bool stlcmd::grep_stl_triangle (float *v)
         else                            // Es sind mehrere Flächen gefunden worden.
             foo = get_min_hc (hc);      // Dreieck mit dem genausten f[0] suchen !
 
-        stlvec[foo.i].attribute.is_sel = !stlvec[foo.i].attribute.is_sel;   // toogle is_sel
+        // stlvec[foo.i].attribute.is_sel = !stlvec[foo.i].attribute.is_sel;   // toogle is_sel
+        stlvec[foo.i].attribute = (stlvec[foo.i].attribute & 0x0001) ? stlvec[foo.i].attribute & 0xFFFE : stlvec[foo.i].attribute |= 0x0001;
         set_select_col (foo.i);         // Farbe anpassen.
 
         if (vboID[0] != 0) {
@@ -723,7 +724,7 @@ bool stlcmd::read_tex_stl (std::string fname)
                     struct _vertex_ vec;
                     vec3copy (n, vec.n);
                     vec4copy (col, vec.c);
-                    vec.attribute.is_sel = 0;
+                    vec.attribute = 0x0000;
                     for (int i=0; i<3; i++) {
                         vec3copy (v[i], vec.v);
                         stlvec.push_back ( vec );   // vertex speichern
@@ -779,7 +780,7 @@ void stlcmd::move_bin_stl_to_stlvec (struct _stl_bin_triangle_ stb)
 {
     struct _vertex_ vec;
 
-    vec.attribute.is_sel = 0;
+    vec.attribute = 0x0000;
     vec4copy (col, vec.c);      // color use by all vertex
     vec3copy (stb.n, vec.n);    // normale use by all 3 vertex
 

@@ -20,16 +20,18 @@ struct _stl_bin_triangle_ {
     uint16_t attribute;
 };
 
+/*
 struct _attribute_ {
     unsigned is_sel : 1;       
     unsigned rest : 15;
 };
+*/
 
 struct _vertex_ {           // Basistructur für VBO's
     float v[3];
     float n[3];
     float c[4];
-    struct _attribute_ attribute;     // default: 0x0000
+    uint16_t attribute;     // default: 0x0000
 };
 
 struct _vertex_small_ {
