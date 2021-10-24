@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.2"
+#define VERSION "v0.4.3"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -52,6 +52,7 @@ void fit_in ();                         // Modell einpassen; up[] bleibt unverä
 bool get_3D_from_view (int x, int y, float *ret);    // Get the 3D-Data from viewport. 3D result => ret[3]
 bool get_2D_from_3Dkoor (float *v, int &x, int &y);
 void init_scene();
+void quit_system();
 static void glutResize (int w, int h);
 static void glutDisplay ();
 // --------- key and mouse function ------------------
@@ -88,7 +89,7 @@ void help()
     cout << "0 : Light 0 on/off\n";
     cout << "1 : Light 1 on/off\n";
     cout << "\n";
-    cout << "ESC : clear select buffer\n";
+    cout << "ESC : clear select buffer || quit\n";
     cout << "\n";
 }
 
@@ -105,7 +106,8 @@ void show_options()
  * @brief   show special key's
  */
 #define LEERSTELLEN 20
-void show_special_keys(){
+void show_special_keys() {
+    cout << "--------------------------------------------\n";
     cout << "            +/- : zoom\n";
     cout << "        →|←|↑|↓ : rotation 15°\n";
     cout << "Shift + →|←|↑|↓ : rotation 90°\n";
@@ -316,6 +318,17 @@ static void glutDisplay()
     
 }
 
+/********************************************************************
+ * @brief 
+ */
+void quit_system()
+{
+    system_is_going_down = 1;
+    stlcmd::clear_allstl();         // clear all stl-data
+    delete basic;
+    glutDestroyWindow(glutGetWindow ());
+}
+
 /*******************************************************************
  * @brief   callback by standard Key
  */
@@ -323,13 +336,14 @@ void keyboard( unsigned char key, int x, int y)
 {
     switch (key) {
         case 27:            // ESC
-            stlcmd::clear_sel_buf(sel_buf);
+            if (sel_buf.size())
+                stlcmd::clear_sel_buf(sel_buf);
+            else
+                quit_system();
+
             break;
         case 'q':           // quit
-            system_is_going_down = 1;
-            stlcmd::clear_allstl();         // clear all stl-data
-            delete basic;
-            glutDestroyWindow(glutGetWindow ());
+            quit_system();
             break;
         case 'c': {     // draw Flächenrückseite (back face) on/off
             GLboolean foo;

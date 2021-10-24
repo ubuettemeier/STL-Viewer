@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.22
+ * @version v0.0.23
  * @date 2021-09-13
  * @todo select buffer bereinigen 24.Okt.2021
  */
@@ -537,7 +537,10 @@ void stlcmd::clear_sel_buf (std::vector <struct _select_buf_> &selbuf)
             glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
         }
     }
+
+    selbuf.clear();
 }
+
 /**********************************************************
  * @brief   draw OpenGL VBA's
  */

@@ -1,7 +1,7 @@
 /**
  * @file stldev.h
  * @author Ulrich Büttemeier
- * @version v0.0.2
+ * @version v0.0.3
  * @date 2021-09-15
  */
 
@@ -40,7 +40,7 @@ struct _pick_buf_ {     // pv[] wird mit <get_3D_from_view()> ermittelt. S.auch 
     float pv[3];        // Enthält die 3D-Koordinaten vom Pick-Punkt !!!
 };
 
-struct _select_buf_ {   // Liste der gepickten Flächen !
+struct _select_buf_ {   // Liste der gepickten Flächen ! S.auch: std::vector<struct _select_buf_> sel_buf
     void *p_to_stlcmd;
     long unsigned int index;
 };

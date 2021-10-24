@@ -28,7 +28,7 @@ c : draw Flächenrückseite (back face) on/off
 0 : Light 0 on/off
 1 : Light 1 on/off
 
-ESC : clear select buffer
+ESC : clear select buffer || quit
 </pre>
 <pre>
 ---- special key's ----
