@@ -1,7 +1,7 @@
 /**
  * @file stldev.h
  * @author Ulrich Büttemeier
- * @version v0.0.3
+ * @version v0.0.4
  * @date 2021-09-15
  */
 
@@ -20,10 +20,16 @@ struct _stl_bin_triangle_ {
     uint16_t attribute;
 };
 
-struct _vertex_ {
+struct _attribute_ {
+    unsigned is_sel : 1;       
+    unsigned rest : 15;
+};
+
+struct _vertex_ {           // Basistructur für VBO's
     float v[3];
     float n[3];
     float c[4];
+    struct _attribute_ attribute;     // default: 0x0000
 };
 
 struct _vertex_small_ {
@@ -40,9 +46,14 @@ struct _pick_buf_ {     // pv[] wird mit <get_3D_from_view()> ermittelt. S.auch 
     float pv[3];        // Enthält die 3D-Koordinaten vom Pick-Punkt !!!
 };
 
-struct _select_buf_ {   // Liste der gepickten Flächen ! S.auch: std::vector<struct _select_buf_> sel_buf
-    void *p_to_stlcmd;
-    long unsigned int index;
+/*****************************************************************
+ * @brief   struct _hilfs_container_ wird für 
+ *          bool stlcmd::grep_stl_triangle (float *v)
+ *          benötigt.
+ */
+struct _hilfs_container_ {
+    long unsigned int i;
+    double f0;
 };
 
 #pragma pack()

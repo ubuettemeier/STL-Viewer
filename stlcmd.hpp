@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.23
+ * @version v0.0.24
  * @date 2021-09-13
  * @todo select buffer bereinigen 24.Okt.2021
  */
@@ -62,8 +62,10 @@ public:
     static void clear_allstl();
     static uint64_t get_anz_all_triangle();
     static void optimise_all_normal_vec();      // Funktion optimiert den Normalvektor. 
-    static void grep_triangle (float x, float y, float z, std::vector <struct _select_buf_> &selbuf);  // Das selectierte Dreieck wird in selbuf eingetragen !
-    static void clear_sel_buf (std::vector <struct _select_buf_> &selbuf);      // Die Dreiecks-Selection wird aufgehoben
+
+    /*********** static Funktionen für select mechanismus ************/
+    static void grep_triangle (float x, float y, float z);  // Sucht das Dreieck zum Punkt xyz, s.auch >grep_stl_triangle()>
+    static void clear_sel_buf ();                           // Die Dreiecks-Selection wird aufgehoben
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -79,7 +81,12 @@ private:
     void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
     bool get_gleich_index (std::vector< std::vector<uint32_t> > &index, int n);
     void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
-    bool grep_stl_triangle (float *v, std::vector <struct _select_buf_> &selbuf);
+
+    /*********** Funktionen für select mechanismus ************/
+    bool grep_stl_triangle (float *v);
+    struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc);
+    void set_select_col (long unsigned int index);
+    void clear_all_sel_triagle ();                      // Selection wird aufgehoben
 
     uint32_t id;    
     string filename;
@@ -107,6 +114,7 @@ public:
     static float *min_ges;
     static float *max_ges;
     static float obj_radius;
+    static long unsigned int all_sel_count;
 };
 
 // ---------- init static's ----------------
@@ -114,6 +122,7 @@ float *stlcmd::center_ges = MEM(3);
 float *stlcmd::min_ges = MEM(3); 
 float *stlcmd::max_ges = MEM(3);
 float stlcmd::obj_radius = sqrt(2.0f);
+long unsigned int stlcmd::all_sel_count = 0;
 
 bool stlcmd::use_new = false;
 uint32_t stlcmd::id_counter = 0;
@@ -148,7 +157,7 @@ stlcmd::stlcmd (string fname)
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);        // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
 
-        int stride = sizeof(struct _vertex_);           // (3+3+4) * float
+        int stride = sizeof(struct _vertex_);           // (3+3+4+2) * float
         char *offset = (char*)NULL;
 
         glVertexPointer(3, GL_FLOAT, stride, offset);   // position  3*float
@@ -406,18 +415,47 @@ void stlcmd::optimise_all_normal_vec()
     }
 }
 
-/********************************************************************
- * @brief   dies ist ein Versuch eine Fläche zu picken !!!
+/*******************************************************************
+ * @brief   für alle selectierten Flächen wird die Selektion aufgehoben
  */
-struct _hilfs_container_ {
-    long unsigned int i;
-    double f0;
-};
+void stlcmd::clear_all_sel_triagle()
+{
+    for (size_t i=0; i<stlvec.size(); i+=3) {
+        if (stlvec[i].attribute.is_sel) {
+            stlvec[i].attribute.is_sel = 0;
+            set_select_col (i);
+        }
+    }
+    stlcmd::all_sel_count = 0;
+
+    if (vboID[0] != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+    }
+}
+
+/*******************************************************************
+ */
+void stlcmd::set_select_col (long unsigned int i)
+{
+    if (!stlvec[i].attribute.is_sel) {
+        vec4set(col[0], col[1], col[2], col[3], stlvec[i].c);
+        vec4set(col[0], col[1], col[2], col[3], stlvec[i+1].c);
+        vec4set(col[0], col[1], col[2], col[3], stlvec[i+2].c);
+        if (all_sel_count) 
+            all_sel_count--;
+    } else {                                        
+        vec4set(1, 0, 0, 1, stlvec[i].c);       // Fläche selektieren
+        vec4set(1, 0, 0, 1, stlvec[i+1].c);
+        vec4set(1, 0, 0, 1, stlvec[i+2].c);
+        all_sel_count++;
+    }
+}
 
 /***********************************************************************
  * @brief Get the min hc object
  */
-struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc)
+struct _hilfs_container_ stlcmd::get_min_hc (std::vector<struct _hilfs_container_> hc)
 {
     struct _hilfs_container_ ret;
     double min = 999999999.9f;
@@ -434,7 +472,7 @@ struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc)
 /************************************************************************
  * @brief 
  */
-bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &selbuf)
+bool stlcmd::grep_stl_triangle (float *v)
 {
     bool ret = 0;
     float ab[3], ac[3];
@@ -478,26 +516,17 @@ bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &sel
         } 
     }
 
-    // -------------- Es sind flächen gefunden worden ---------------------------
+    // -------------- Es sind Flächen gefunden worden ---------------------------
     if (hc.size()) {
 
         struct _hilfs_container_ foo;
-        if (hc.size() == 1)
+        if (hc.size() == 1)             // Es ist nur 1 Fläche gefunden worden !
             foo = hc[0];
-        else 
-            foo = get_min_hc (hc);      // Dreieck mit dem genausten f[0] finden !
+        else                            // Es sind mehrere Flächen gefunden worden.
+            foo = get_min_hc (hc);      // Dreieck mit dem genausten f[0] suchen !
 
-        if ((stlvec[foo.i].c[0] == 1) && (stlvec[foo.i].c[1] == 0) && (stlvec[foo.i].c[2] == 0)) {      // Fläche ist schon selektiert. Selektion wird zurückgenommen
-            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i].c);
-            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i+1].c);
-            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i+2].c);
-        } else {                                        
-            vec4set(1, 0, 0, 1, stlvec[foo.i].c);       // Fläche selektieren
-            vec4set(1, 0, 0, 1, stlvec[foo.i+1].c);
-            vec4set(1, 0, 0, 1, stlvec[foo.i+2].c);
-            ret = 1;
-            selbuf.push_back ( {this, foo.i} );
-        }
+        stlvec[foo.i].attribute.is_sel = !stlvec[foo.i].attribute.is_sel;   // toogle is_sel
+        set_select_col (foo.i);         // Farbe anpassen.
 
         if (vboID[0] != 0) {
             glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
@@ -509,51 +538,28 @@ bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &sel
 }
 
 /****************************************************************
- * @brief   Das selectierte Dreieck wird in selbuf eingetragen !
+ * @brief   static void stlcmd::grep_triangle (float x, float y, float z)
+ *          Das selectierte Dreieck wird in selbuf eingetragen !
  */
-void stlcmd::grep_triangle (float x, float y, float z, std::vector <struct _select_buf_> &selbuf)
+void stlcmd::grep_triangle (float x, float y, float z)
 {
     float v[3];
 
     vec3set (x, y, z, v);
     for (size_t i=0; i<allstl.size(); i++) {
-        allstl[i]->grep_stl_triangle ( v, selbuf );
+        allstl[i]->grep_stl_triangle ( v );
     }
 }
 
 /************************************************************
- * @brief   Die Dreiecks-Selection wird aufgehoben
+ * @brief   static void stlcmd::clear_sel_buf ()
+ *          Die Dreiecks-Selection wird aufgehoben
  */
-void stlcmd::clear_sel_buf (std::vector <struct _select_buf_> &selbuf)
+void stlcmd::clear_sel_buf ()
 {
-    while (selbuf.size()) {
-        stlcmd *p = static_cast<stlcmd *> (selbuf[0].p_to_stlcmd);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index].c);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index+1].c);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index+2].c);
-
-        if (p->vboID[0] != 0) {
-            glBindBuffer(GL_ARRAY_BUFFER, p->vboID[0]);       // VBO 0
-            glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
-        }
-
-        selbuf.erase( selbuf.begin() );     // kill first entry
+    for (size_t i=0; i<allstl.size(); i++) {
+        allstl[i]->clear_all_sel_triagle ();
     }
-    
-    /*
-    for (size_t i=0; i<selbuf.size(); i++) {
-        stlcmd *p = static_cast<stlcmd *> (selbuf[i].p_to_stlcmd);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index].c);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+1].c);
-        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+2].c);
-
-        if (p->vboID[0] != 0) {
-            glBindBuffer(GL_ARRAY_BUFFER, p->vboID[0]);       // VBO 0
-            glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
-        }
-    }
-    selbuf.clear();
-    */
 }
 
 /**********************************************************
@@ -717,6 +723,7 @@ bool stlcmd::read_tex_stl (std::string fname)
                     struct _vertex_ vec;
                     vec3copy (n, vec.n);
                     vec4copy (col, vec.c);
+                    vec.attribute.is_sel = 0;
                     for (int i=0; i<3; i++) {
                         vec3copy (v[i], vec.v);
                         stlvec.push_back ( vec );   // vertex speichern
@@ -772,6 +779,7 @@ void stlcmd::move_bin_stl_to_stlvec (struct _stl_bin_triangle_ stb)
 {
     struct _vertex_ vec;
 
+    vec.attribute.is_sel = 0;
     vec4copy (col, vec.c);      // color use by all vertex
     vec3copy (stb.n, vec.n);    // normale use by all 3 vertex
 

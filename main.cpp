@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.4.1"
+#define VERSION "v0.4.5"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -42,7 +42,7 @@ int mouse_x = 0, mouse_y = 0;           // globale Variable für Mausposition
 uint8_t system_is_going_down = 0;       // wird benötigt in timer(), keyboard()
 
 struct _pick_buf_ pick_buf = {false, 0, 0, 0};  // Zeigt an, ob und wo ein Element gepickt wurde. Wird in mouse_func() und mouse_move() verwendet.
-std::vector <struct _select_buf_> sel_buf;      // selected buffer
+// std::vector <struct _select_buf_> sel_buf;      // selected buffer
 
 // ----------- Prototypen -----------------
 void help();
@@ -336,11 +336,10 @@ void keyboard( unsigned char key, int x, int y)
 {
     switch (key) {
         case 27:            // ESC
-            if (sel_buf.size())
-                stlcmd::clear_sel_buf(sel_buf);
+            if (stlcmd::all_sel_count)
+                stlcmd::clear_sel_buf();
             else
                 quit_system();
-
             break;
         case 'q':           // quit
             quit_system();
@@ -534,7 +533,7 @@ void mouse_func (int button, int state, int x, int y)
                 if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {  // Nachschauen, ob ein Element gepickt wurde.
                     vec3copy (foo, pick_buf.pv); 
                     if (shift)                                              // shift + left button => select triangle
-                        stlcmd::grep_triangle ( pick_buf.pv[0], pick_buf.pv[1], pick_buf.pv[2], sel_buf );     // select triangle => buffer
+                        stlcmd::grep_triangle ( pick_buf.pv[0], pick_buf.pv[1], pick_buf.pv[2] );     // select triangle => buffer
                 }
             } else      // left button is up
                 glutSetCursor( GLUT_CURSOR_RIGHT_ARROW );
