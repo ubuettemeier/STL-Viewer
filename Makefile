@@ -2,7 +2,7 @@
 CC = g++
 # --- gnu++11 uses GNU extensions. ---
 CFLAGS = --std=c++1y	# --std=c++14
-CFLAGS += -Wno-psabi -Wall -c -O0 -DNDEBUG
+CFLAGS += -Wno-psabi -Wall -c -O0 -DNDEBUG   # no ABI Warnings // undocumented option // used for Raspy
 
 LDFLAGS += -lGL -lGLU -lglut -lGLEW 
 

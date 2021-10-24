@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.13
+ * @version v0.0.14
  * @date 2021-08-26
  */
 
@@ -23,7 +23,6 @@ using namespace std;
 
 #define DET_2A(a11,a12,a21,a22) \
 ((a11)*(a22) - (a21)*(a12))
-
 
 void vec3print_vec (float *p, const char *endline = "\n");
 void vec3print_vec (const char *s, float *p);
@@ -84,11 +83,11 @@ float rad_to_grad (float rad);          // return grad
 
 float vec3dist_point_vec (float *p, float *a, float *r);  // Normalabstand von p^ bis zur Gerade a^+x*r^
 bool schnittpunkt_gerade_ebene (float *gc,    // g: gc + ret[0]*gn
-											   float *gn,           
-											   float *ec,           // e: ec + ret[1]*eu + ret[2]*ev
-											   float *eu,
-											   float *ev,
-                         float *ret);         // ret: Faktoren für die Schnittpunkt-Berechnung
+											  float *gn,           
+											  float *ec,           // e: ec + ret[1]*eu + ret[2]*ev
+											  float *eu,
+											  float *ev,
+                        float *ret);         // ret: Faktoren für die Schnittpunkt-Berechnung
 
 /***********************************************************************************************
  * @brief Get the max min off data

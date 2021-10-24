@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.3"
+#define VERSION "v0.4.4.1"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -107,7 +107,7 @@ void show_options()
  */
 #define LEERSTELLEN 20
 void show_special_keys() {
-    cout << "--------------------------------------------\n";
+    cout << "------------ special keys -----------------\n";
     cout << "            +/- : zoom\n";
     cout << "        →|←|↑|↓ : rotation 15°\n";
     cout << "Shift + →|←|↑|↓ : rotation 90°\n";

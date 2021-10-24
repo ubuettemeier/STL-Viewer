@@ -526,8 +526,23 @@ void stlcmd::grep_triangle (float x, float y, float z, std::vector <struct _sele
  */
 void stlcmd::clear_sel_buf (std::vector <struct _select_buf_> &selbuf)
 {
+    while (selbuf.size()) {
+        stlcmd *p = static_cast<stlcmd *> (selbuf[0].p_to_stlcmd);
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index].c);
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index+1].c);
+        vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[0].index+2].c);
+
+        if (p->vboID[0] != 0) {
+            glBindBuffer(GL_ARRAY_BUFFER, p->vboID[0]);       // VBO 0
+            glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
+        }
+
+        selbuf.erase( selbuf.begin() );     // kill first entry
+    }
+    
+    /*
     for (size_t i=0; i<selbuf.size(); i++) {
-        stlcmd *p = (stlcmd *) selbuf[i].p_to_stlcmd;
+        stlcmd *p = static_cast<stlcmd *> (selbuf[i].p_to_stlcmd);
         vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index].c);
         vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+1].c);
         vec4set(p->col[0], p->col[1], p->col[2], p->col[3], p->stlvec[selbuf[i].index+2].c);
@@ -537,8 +552,8 @@ void stlcmd::clear_sel_buf (std::vector <struct _select_buf_> &selbuf)
             glBufferData(GL_ARRAY_BUFFER, p->stlvec.size() *sizeof(struct _vertex_), p->stlvec.data(), GL_STATIC_DRAW);
         }
     }
-
     selbuf.clear();
+    */
 }
 
 /**********************************************************
