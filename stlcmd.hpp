@@ -1,8 +1,9 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.21
+ * @version v0.0.22
  * @date 2021-09-13
+ * @todo select buffer bereinigen 24.Okt.2021
  */
 
 #ifndef STLCMD_HPP
@@ -61,7 +62,7 @@ public:
     static void clear_allstl();
     static uint64_t get_anz_all_triangle();
     static void optimise_all_normal_vec();      // Funktion optimiert den Normalvektor. 
-    static void grep_triangle (float *v, std::vector <struct _select_buf_> &selbuf);  // Das selectierte Dreieck wird in selbuf eingetragen !
+    static void grep_triangle (float x, float y, float z, std::vector <struct _select_buf_> &selbuf);  // Das selectierte Dreieck wird in selbuf eingetragen !
     static void clear_sel_buf (std::vector <struct _select_buf_> &selbuf);      // Die Dreiecks-Selection wird aufgehoben
 
 private:
@@ -486,14 +487,17 @@ bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &sel
         else 
             foo = get_min_hc (hc);      // Dreieck mit dem genausten f[0] finden !
 
-        // cout << "Anzahl Treffer: " << counter << " f[0]=" << foo.f0 << endl;
-
-        vec4set(1, 0, 0, 1, stlvec[foo.i].c);
-        vec4set(1, 0, 0, 1, stlvec[foo.i+1].c);
-        vec4set(1, 0, 0, 1, stlvec[foo.i+2].c);
-
-        ret = 1;
-        selbuf.push_back ( {this, foo.i} );
+        if ((stlvec[foo.i].c[0] == 1) && (stlvec[foo.i].c[1] == 0) && (stlvec[foo.i].c[2] == 0)) {      // Fläche ist schon selektiert. Selektion wird zurückgenommen
+            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i].c);
+            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i+1].c);
+            vec4set(col[0], col[1], col[2], col[3], stlvec[foo.i+2].c);
+        } else {                                        
+            vec4set(1, 0, 0, 1, stlvec[foo.i].c);       // Fläche selektieren
+            vec4set(1, 0, 0, 1, stlvec[foo.i+1].c);
+            vec4set(1, 0, 0, 1, stlvec[foo.i+2].c);
+            ret = 1;
+            selbuf.push_back ( {this, foo.i} );
+        }
 
         if (vboID[0] != 0) {
             glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
@@ -507,8 +511,11 @@ bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &sel
 /****************************************************************
  * @brief   Das selectierte Dreieck wird in selbuf eingetragen !
  */
-void stlcmd::grep_triangle (float *v, std::vector <struct _select_buf_> &selbuf)
+void stlcmd::grep_triangle (float x, float y, float z, std::vector <struct _select_buf_> &selbuf)
 {
+    float v[3];
+
+    vec3set (x, y, z, v);
     for (size_t i=0; i<allstl.size(); i++) {
         allstl[i]->grep_stl_triangle ( v, selbuf );
     }

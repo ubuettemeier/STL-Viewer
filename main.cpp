@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.1"
+#define VERSION "v0.4.2"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -520,7 +520,7 @@ void mouse_func (int button, int state, int x, int y)
                 if ((pick_buf.ist_aktiv = get_3D_from_view (x, y, foo))) {  // Nachschauen, ob ein Element gepickt wurde.
                     vec3copy (foo, pick_buf.pv); 
                     if (shift)                                              // shift + left button => select triangle
-                        stlcmd::grep_triangle ( pick_buf.pv, sel_buf );     // select triangle => buffer
+                        stlcmd::grep_triangle ( pick_buf.pv[0], pick_buf.pv[1], pick_buf.pv[2], sel_buf );     // select triangle => buffer
                 }
             } else      // left button is up
                 glutSetCursor( GLUT_CURSOR_RIGHT_ARROW );
