@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.20
+ * @version v0.0.21
  * @date 2021-09-13
  */
 
@@ -78,7 +78,7 @@ private:
     void show_fortschritt_prozent_step (uint32_t &counter, bool set_zero = false, int step_width_prozent = 5);
     bool get_gleich_index (std::vector< std::vector<uint32_t> > &index, int n);
     void optimise_normal_vec();             // Funktion optimiert den Normalvektor. 
-    bool grep_stl_triangle (float *v, float &min_dist, std::vector <struct _select_buf_> &selbuf);
+    bool grep_stl_triangle (float *v, std::vector <struct _select_buf_> &selbuf);
 
     uint32_t id;    
     string filename;
@@ -433,7 +433,7 @@ struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc)
 /************************************************************************
  * @brief 
  */
-bool stlcmd::grep_stl_triangle (float *v, float &min_dist, std::vector <struct _select_buf_> &selbuf)
+bool stlcmd::grep_stl_triangle (float *v, std::vector <struct _select_buf_> &selbuf)
 {
     bool ret = 0;
     float ab[3], ac[3];
@@ -509,13 +509,9 @@ bool stlcmd::grep_stl_triangle (float *v, float &min_dist, std::vector <struct _
  */
 void stlcmd::grep_triangle (float *v, std::vector <struct _select_buf_> &selbuf)
 {
-    float min_dist = 100000000.0f;
-
     for (size_t i=0; i<allstl.size(); i++) {
-        if (allstl[i]->grep_stl_triangle ( v, min_dist, selbuf ))
-            cout << allstl[i]->filename << " Treffer\n";
+        allstl[i]->grep_stl_triangle ( v, selbuf );
     }
-    // cout << min_dist << endl;
 }
 
 /************************************************************

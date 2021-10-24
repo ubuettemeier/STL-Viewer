@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.0"
+#define VERSION "v0.4.1"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -591,61 +591,63 @@ void mouse_move (int x, int y)
             vec3add_vec_mul_fakt (look_at, up, dy*faktor, look_at);
             vec3add_vec_mul_fakt (look_at, n, dx*faktor, look_at);
         } else {                        // Rotate Camera
-            double dx = x - last_mx;
-            double dy = y - last_my;
-            dist = sqrt(dx*dx + dy*dy);
-            
-            if (dx != 0) {
-                alpha = atanf (dy / dx);
-                if (dy >= 0) {
-                    if (dx < 0)
-                        alpha += M_PI;
-                } else      // dy < 0
-                    alpha = (dx < 0) ? alpha+M_PI : 2.0*M_PI+alpha;
+            if (!shift) {
+                double dx = x - last_mx;
+                double dy = y - last_my;
+                dist = sqrt(dx*dx + dy*dy);
+                
+                if (dx != 0) {
+                    alpha = atanf (dy / dx);
+                    if (dy >= 0) {
+                        if (dx < 0)
+                            alpha += M_PI;
+                    } else      // dy < 0
+                        alpha = (dx < 0) ? alpha+M_PI : 2.0*M_PI+alpha;
+                }
+                else     // dx == 0
+                    alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
+
+                // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
+                vec3copy (buf_eye, eye);
+                vec3copy (buf_look_at, look_at);
+                vec3copy (buf_up, up);
+
+                float n[3], foo[3], p[3], upp[3], np[3] = {0, 0, 0};
+                
+                vec3sub (look_at, eye, foo);    // foo[] = Blickrichtungs-Vector
+                vec3Normalize (foo);
+                vec3Normalize (up);
+                vec3Cross (foo, up, n);         // Senkrechte von up und foo (Blickrichtung)
+
+                float dpf[3] = {0, 0, 0};   // Faktoren 
+                float dp[3];                // Durchstoßpunkt.
+                if (pick_buf.ist_aktiv) {
+                    vec3copy (pick_buf.pv, dp);     // pick-Punkt = Drehpunkt
+                    glutSetCursor( GLUT_CURSOR_CYCLE );
+                } else {
+                    schnittpunkt_gerade_ebene (eye, foo,                // g: eye + foo
+                                            stlcmd::center_ges, up, n,  // e: stlcmd::center_ges + up + n;
+                                            dpf); 
+                    vec3add_vec_mul_fakt (eye, foo, dpf[2], dp);    // dp (Durchstoßpunkt) brechnen
+                }
+                float ap[3];
+                vec3copy (up, ap);      // ap = up
+
+                vec3rot_point_um_achse_II (np,      // np={0,0,0}: neue Rotationsachse um Cam-Richtung foo[] drehen
+                                        foo,     // foo[] = Blickrichtungs-Vector
+                                        alpha, 
+                                        ap);
+
+                vec3add (dp, ap, p);     // Endpunkt für Rotationsachse brechnen => p = dp + ap
+
+                vec3add (eye, up, upp);  // Endpunkt von up berechnen => upp = eye + up. Muss anschließend zurückgerechnet werden.
+                // Cam um Rotationsachse (dp[], p[]) drehen.  (dp: Durchstoßpunkt durch Ebene: stlcmd::center_ges, up, n )
+                vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), look_at);    
+                vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), eye);
+                vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), upp);
+
+                vec3sub (upp, eye, up); // up wieder herstellen.
             }
-            else     // dx == 0
-                alpha = (dy >= 0) ? M_PI/2.0f : M_PI+M_PI_2;
-
-            // ---- gepufferte Cam-Koordinaten holen. S.auch mouse_func() -------
-            vec3copy (buf_eye, eye);
-            vec3copy (buf_look_at, look_at);
-            vec3copy (buf_up, up);
-
-            float n[3], foo[3], p[3], upp[3], np[3] = {0, 0, 0};
-            
-            vec3sub (look_at, eye, foo);    // foo[] = Blickrichtungs-Vector
-            vec3Normalize (foo);
-            vec3Normalize (up);
-            vec3Cross (foo, up, n);         // Senkrechte von up und foo (Blickrichtung)
-
-            float dpf[3] = {0, 0, 0};   // Faktoren 
-            float dp[3];                // Durchstoßpunkt.
-            if (pick_buf.ist_aktiv) {
-                vec3copy (pick_buf.pv, dp);     // pick-Punkt = Drehpunkt
-                glutSetCursor( GLUT_CURSOR_CYCLE );
-            } else {
-                schnittpunkt_gerade_ebene (eye, foo,                // g: eye + foo
-                                           stlcmd::center_ges, up, n,  // e: stlcmd::center_ges + up + n;
-                                           dpf); 
-                vec3add_vec_mul_fakt (eye, foo, dpf[2], dp);    // dp (Durchstoßpunkt) brechnen
-            }
-            float ap[3];
-            vec3copy (up, ap);      // ap = up
-
-            vec3rot_point_um_achse_II (np,      // np={0,0,0}: neue Rotationsachse um Cam-Richtung foo[] drehen
-                                    foo,     // foo[] = Blickrichtungs-Vector
-                                    alpha, 
-                                    ap);
-
-            vec3add (dp, ap, p);     // Endpunkt für Rotationsachse brechnen => p = dp + ap
-
-            vec3add (eye, up, upp);  // Endpunkt von up berechnen => upp = eye + up. Muss anschließend zurückgerechnet werden.
-            // Cam um Rotationsachse (dp[], p[]) drehen.  (dp: Durchstoßpunkt durch Ebene: stlcmd::center_ges, up, n )
-            vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), look_at);    
-            vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), eye);
-            vec3rot_point_um_achse_II (dp, p, grad_to_rad(-dist/2.0f), upp);
-
-            vec3sub (upp, eye, up); // up wieder herstellen.
         }
     }
 }
