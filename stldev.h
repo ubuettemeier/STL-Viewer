@@ -1,7 +1,7 @@
 /**
  * @file stldev.h
  * @author Ulrich Büttemeier
- * @version v0.0.4
+ * @version v0.0.5
  * @date 2021-09-15
  */
 
@@ -31,7 +31,7 @@ struct _vertex_ {           // Basistructur für VBO's
     float v[3];
     float n[3];
     float c[4];
-    uint16_t attribute;     // default: 0x0000
+    unsigned char attrib;     // bit0: 1=select; s.auch ...
 };
 
 struct _vertex_small_ {
