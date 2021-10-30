@@ -4,9 +4,13 @@ simple STL File Viewer
 example: ./stlviewer  STL_data/baby-tux_bin.STL</pre>
 --- Entwicklungsumgebung ---
 
-- Linux Ubuntu 20.04.1
 - gcc c++1y
 - OpenGL Version= 4.6 (Compatibility Profile) Mesa 21.0.3
+
+-- Compiler --
+
+- g++ (Ubuntu 7.5.0-3ubuntu1-18.04) 7.5.0  
+- g++ (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
 
 <pre>
 ---- Keyboard shortcuts ----

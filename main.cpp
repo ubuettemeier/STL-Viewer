@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.5.2"
+#define VERSION "v0.4.5.3"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -334,6 +334,7 @@ void quit_system()
  */
 void keyboard( unsigned char key, int x, int y) 
 {
+    // cout << (int)key << endl;
     switch (key) {
         case 27:            // ESC
             if (stlcmd::all_sel_count)
@@ -343,6 +344,9 @@ void keyboard( unsigned char key, int x, int y)
             break;
         case 'q':           // quit
             quit_system();
+            break;
+        case 127:           // Entf.
+            stlcmd::kill_sel_triangle ();
             break;
         case 'c': {     // draw Flächenrückseite (back face) on/off
             GLboolean foo;

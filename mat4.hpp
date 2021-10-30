@@ -1,7 +1,7 @@
 /**
  * @file mat4.hpp
  * @author Ulrich Buettemeier
- * @version v0.0.14
+ * @version v0.0.15
  * @date 2021-08-26
  */
 
@@ -48,7 +48,7 @@ void vec3richtungs_cos (float *a, float *res);
 float vec3bertag ( float *a );                      // Vektor Betrag
 float vec3dist (float *a, float *b);
 float vec3Dot( float *a, float *b);
-void vec3add ( float *a, float *b, float *res);      // Addition
+inline void vec3add ( float *a, float *b, float *res);      // Addition
 void vec3sub( float *a, float *b, float *res );      // subtraktion
 void vec3mul_faktor (float *a, float f, float *res); // res = a * f
 void vec3add_vec_mul_fakt ( float *a, float *b, float f, float *res );      // res = a + b*f
@@ -273,7 +273,7 @@ float vec3Dot( float *a, float *b) {
 }
 
 /// ---------------------------------------------------------------------------------------------
-void vec3add ( float *a, float *b, float *res)      // Addition
+inline void vec3add ( float *a, float *b, float *res)      // Addition
 {
   for (int i=0; i<3; i++)
     res[i] = a[i] + b[i];

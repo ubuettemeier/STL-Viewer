@@ -1,7 +1,7 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.24
+ * @version v0.0.25
  * @date 2021-09-13
  * @todo select buffer bereinigen 24.Okt.2021
  */
@@ -66,6 +66,7 @@ public:
     /*********** static Funktionen für select mechanismus ************/
     static void grep_triangle (float x, float y, float z);  // Sucht das Dreieck zum Punkt xyz, s.auch >grep_stl_triangle()>
     static void clear_sel_buf ();                           // Die Dreiecks-Selection wird aufgehoben
+    static void kill_sel_triangle ();
 
 private:
     size_t grep_index (uint32_t surch_id);
@@ -86,7 +87,8 @@ private:
     bool grep_stl_triangle (float *v);
     struct _hilfs_container_ get_min_hc (std::vector<struct _hilfs_container_> hc);
     void set_select_col (long unsigned int index);
-    void clear_all_sel_triagle ();                      // Selection wird aufgehoben
+    void clear_all_sel_triagle ();                      // Selection wird aufgehoben    
+    void kill_all_sel_triagle();
 
     uint32_t id;    
     string filename;
@@ -415,7 +417,7 @@ void stlcmd::optimise_all_normal_vec()
     }
 }
 
-/*******************************************************************
+/*************************************************************************************************
  * @brief   für alle selectierten Flächen wird die Selektion aufgehoben
  */
 void stlcmd::clear_all_sel_triagle()
@@ -426,6 +428,28 @@ void stlcmd::clear_all_sel_triagle()
             set_select_col (i);
         }
     }
+    stlcmd::all_sel_count = 0;
+
+    if (vboID[0] != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
+        glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+    }
+}
+
+/******************************************************************
+ */
+void stlcmd::kill_all_sel_triagle()
+{
+    size_t i = 0;
+    while (i < stlvec.size()) {
+        if (stlvec[i].attrib & 0x01) {
+            stlvec.erase (stlvec.begin()+i, stlvec.begin()+i+3);
+            // stlvec[i].attrib &= 0xFE;
+            // set_select_col (i);
+        } else 
+            i += 3;
+    }
+    
     stlcmd::all_sel_count = 0;
 
     if (vboID[0] != 0) {
@@ -560,6 +584,16 @@ void stlcmd::clear_sel_buf ()
 {
     for (size_t i=0; i<allstl.size(); i++) {
         allstl[i]->clear_all_sel_triagle ();
+    }
+}
+
+/*********************************************************
+ * 
+ */
+void stlcmd::kill_sel_triangle ()
+{
+    for (size_t i=0; i<allstl.size(); i++) {
+        allstl[i]->kill_all_sel_triagle();
     }
 }
 
