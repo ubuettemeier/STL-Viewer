@@ -443,18 +443,27 @@ void stlcmd::kill_all_sel_triagle()
     size_t i = 0;
     while (i < stlvec.size()) {
         if (stlvec[i].attrib & 0x01) {
-            stlvec.erase (stlvec.begin()+i, stlvec.begin()+i+3);
-            // stlvec[i].attrib &= 0xFE;
-            // set_select_col (i);
+            stlvec.erase (stlvec.begin()+i, stlvec.begin()+i+3);    // trinagle löschen, d.h. 3 vertexe löschen
         } else 
             i += 3;
     }
     
     stlcmd::all_sel_count = 0;
 
+    get_min_max_center ();
+    make_triangle_center ();
+    make_line_vertex ();
+
+    get_min_max_center_ges();
+
     if (vboID[0] != 0) {
         glBindBuffer(GL_ARRAY_BUFFER, vboID[0]);       // VBO 0
         glBufferData(GL_ARRAY_BUFFER, stlvec.size() *sizeof(struct _vertex_), stlvec.data(), GL_STATIC_DRAW);
+    }
+    // ------------------- Linien auf VAO 1 --------------------------
+    if (vboID[1] != 0) {
+        glBindBuffer(GL_ARRAY_BUFFER, vboID[1]);        // VBO 1
+        glBufferData(GL_ARRAY_BUFFER, stlline.size() *sizeof(struct _vertex_), stlline.data(), GL_STATIC_DRAW);
     }
 }
 
@@ -904,6 +913,7 @@ void stlcmd::init_stlcmd()
  */
 void stlcmd::make_line_vertex()
 {
+    stlline.clear();
     for (size_t i=0; i<stlvec.size(); i+=3) {
        stlline.push_back (stlvec[i]);
        stlline.push_back (stlvec[i+1]);
@@ -922,6 +932,8 @@ void stlcmd::make_line_vertex()
 void stlcmd::make_triangle_center()
 {
     struct _vertex_only_ sum;
+
+    tri_center.clear();
     for (size_t i=0; i<stlvec.size(); i+=3) {
         vec3set (0.0f, sum.v);
         for (int n=0; n<3; n++) 

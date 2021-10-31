@@ -5,7 +5,7 @@
  * @date 2021-09-12
  */
 
-#define VERSION "v0.4.5.3"
+#define VERSION "v0.4.6"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -89,7 +89,8 @@ void help()
     cout << "0 : Light 0 on/off\n";
     cout << "1 : Light 1 on/off\n";
     cout << "\n";
-    cout << "ESC : clear select buffer || quit\n";
+    cout << "ESC : clear select buffer\n";
+    cout << "Entf : erase select triangle\n";
     cout << "\n";
 }
 
@@ -336,12 +337,10 @@ void keyboard( unsigned char key, int x, int y)
 {
     // cout << (int)key << endl;
     switch (key) {
-        case 27:            // ESC
-            if (stlcmd::all_sel_count)
-                stlcmd::clear_sel_buf();
-            else
-                quit_system();
+        case 27:            // ESC = clear select buffer
+            stlcmd::clear_sel_buf();    
             break;
+        case 17:        // Strg + q  ???
         case 'q':           // quit
             quit_system();
             break;
@@ -349,11 +348,11 @@ void keyboard( unsigned char key, int x, int y)
             stlcmd::kill_sel_triangle ();
             break;
         case 'c': {     // draw Flächenrückseite (back face) on/off
-            GLboolean foo;
-            glGetBooleanv (GL_CULL_FACE, &foo);
-            foo ? glDisable ( GL_CULL_FACE ) : glEnable ( GL_CULL_FACE );
-            glGetBooleanv (GL_CULL_FACE, &foo);
-            cout << "draw back face= " << (foo ? "false" : "true") << endl;
+                GLboolean foo;
+                glGetBooleanv (GL_CULL_FACE, &foo);
+                foo ? glDisable ( GL_CULL_FACE ) : glEnable ( GL_CULL_FACE );
+                glGetBooleanv (GL_CULL_FACE, &foo);
+                cout << "draw back face= " << (foo ? "false" : "true") << endl;
             }
             break;
         case '0':   // Light 0 on/off
@@ -703,6 +702,7 @@ static void timer(int v)
  */
 int main(int argc, char **argv) 
 {
+    cout << "Version: " << VERSION << endl;
     if (argc < 2)
         show_options();
     

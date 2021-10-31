@@ -4,10 +4,10 @@ simple STL File Viewer
 example: ./stlviewer  STL_data/baby-tux_bin.STL</pre>
 --- Entwicklungsumgebung ---
 
-- gcc c++1y
-- OpenGL Version= 4.6 (Compatibility Profile) Mesa 21.0.3
+- g++  --std=c++1y
+- OpenGL Version= 3.0 Mesa 20.0.8
 
--- Compiler --
+-- getestete Compiler --
 
 - g++ (Ubuntu 7.5.0-3ubuntu1-18.04) 7.5.0  
 - g++ (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0
@@ -32,7 +32,8 @@ c : draw Flächenrückseite (back face) on/off
 0 : Light 0 on/off
 1 : Light 1 on/off
 
-ESC : clear select buffer || quit
+ESC : clear select buffer
+Entf : erase select triangle
 </pre>
 <pre>
 ---- special key's ----
