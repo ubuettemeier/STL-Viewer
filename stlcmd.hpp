@@ -1,9 +1,12 @@
 /**
  * @file stlcmd.cpp
  * @author Ulrich Buettemeier
- * @version v0.0.25
+ * @version v0.0.26
  * @date 2021-09-13
  * @todo select buffer bereinigen 24.Okt.2021
+ * 
+ * @copyright Copyright (c) 2021 Ulrich Buettemeier
+ * 
  */
 
 #ifndef STLCMD_HPP
@@ -441,6 +444,7 @@ void stlcmd::clear_all_sel_triagle()
 void stlcmd::kill_all_sel_triagle()
 {
     size_t i = 0;
+
     while (i < stlvec.size()) {
         if (stlvec[i].attrib & 0x01) {
             stlvec.erase (stlvec.begin()+i, stlvec.begin()+i+3);    // trinagle löschen, d.h. 3 vertexe löschen

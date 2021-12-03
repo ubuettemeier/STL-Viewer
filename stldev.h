@@ -1,7 +1,7 @@
 /**
  * @file stldev.h
  * @author Ulrich Büttemeier
- * @version v0.0.5
+ * @version v0.0.6
  * @date 2021-09-15
  */
 
@@ -19,13 +19,6 @@ struct _stl_bin_triangle_ {
     float p2[3];
     uint16_t attribute;
 };
-
-/*
-struct _attribute_ {
-    unsigned is_sel : 1;       
-    unsigned rest : 15;
-};
-*/
 
 struct _vertex_ {           // Basistructur für VBO's
     float v[3];

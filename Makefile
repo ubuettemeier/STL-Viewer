@@ -14,6 +14,7 @@ HEADER = stlcmd.hpp
 HEADER += utilities.hpp
 HEADER += mat4.hpp
 HEADER += basicelement.hpp
+HEADER += stldev.h
 
 OBJ = $(FILENAME).o
 BIN = $(BUILDFILE)

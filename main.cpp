@@ -3,9 +3,12 @@
  * @brief simple STLViewer
  * @author Ulrich Buettemeier
  * @date 2021-09-12
+ * 
+ * @copyright Copyright (c) 2021 Ulrich Buettemeier
+ * 
  */
 
-#define VERSION "v0.4.6"
+#define VERSION "v0.4.7"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN
@@ -42,7 +45,6 @@ int mouse_x = 0, mouse_y = 0;           // globale Variable für Mausposition
 uint8_t system_is_going_down = 0;       // wird benötigt in timer(), keyboard()
 
 struct _pick_buf_ pick_buf = {false, 0, 0, 0};  // Zeigt an, ob und wo ein Element gepickt wurde. Wird in mouse_func() und mouse_move() verwendet.
-// std::vector <struct _select_buf_> sel_buf;      // selected buffer
 
 // ----------- Prototypen -----------------
 void help();
@@ -316,7 +318,6 @@ static void glutDisplay()
 
     glutSwapBuffers();
     glutReportErrors();
-    
 }
 
 /********************************************************************
