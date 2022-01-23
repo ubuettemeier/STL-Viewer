@@ -1,17 +1,16 @@
 /**
- * @file main.cpp
- * @brief simple STLViewer
- * @author Ulrich Buettemeier
- * @date 2021-09-12
+ * @brief   simple STLViewer
+ * @file    main.cpp
+ * @author  Ulrich Buettemeier
+ * @date    2022-01-23
  * 
- * @copyright Copyright (c) 2021 Ulrich Buettemeier
+ * @copyright Copyright (c) 2022
  * 
  */
 
-#define VERSION "v0.4.8"
+#define VERSION "v0.4.9"
 
-// Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
-// #define USE_FULL_SCREEN
+// #define USE_FULL_SCREEN      // create mainwindow with SCREEN_WIDTH / SCREEN_HEIGHT
 
 #include <iostream>
 #include <iomanip>
@@ -86,7 +85,8 @@ void help()
     cout << "d : Draufsicht XZ-plane\n";
     cout << "s : Seitenansicht von links YZ-plane\n";
     cout << "o : optimiere Normal-Vektoren\n";
-    cout << "c : draw Flächenrückseite (back face) on/off\n";
+    cout << "c : draw Flächenrückseite (back face) on/off\n\n";
+    cout << "n : Liste alle Modelnamen auf\n";
     cout << "\n";
     cout << "0 : Light 0 on/off\n";
     cout << "1 : Light 1 on/off\n";
@@ -372,6 +372,9 @@ void keyboard( unsigned char key, int x, int y)
             break;
         case 'k':
             show_special_keys();
+            break;
+        case 'n':
+            stlcmd::cout_all_Modellname();
             break;
         case '-':           // zoom kleiner
         case '+':           // zoom größer

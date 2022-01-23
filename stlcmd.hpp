@@ -65,6 +65,7 @@ public:
     static void clear_allstl();
     static uint64_t get_anz_all_triangle();
     static void optimise_all_normal_vec();      // Funktion optimiert den Normalvektor. 
+    static void cout_all_Modellname();
 
     /*********** static Funktionen für select mechanismus ************/
     static void grep_triangle (float x, float y, float z);  // Sucht das Dreieck zum Punkt xyz, s.auch >grep_stl_triangle()>
@@ -131,7 +132,7 @@ long unsigned int stlcmd::all_sel_count = 0;
 
 bool stlcmd::use_new = false;
 uint32_t stlcmd::id_counter = 0;
-vector<stlcmd *> stlcmd::allstl {};
+vector<stlcmd *> stlcmd::allstl {};     // Liste aller Modelle
 
 /**********************************************************
  * @brief Construct a new stlcmd::stlcmd object
@@ -418,6 +419,18 @@ void stlcmd::optimise_all_normal_vec()
     for (size_t i=0; i<allstl.size(); i++) {
         allstl[i]->optimise_normal_vec();   
     }
+}
+
+/********************************************************************
+ * @brief   static void cout_all_Modellname();
+ */
+void stlcmd::cout_all_Modellname()
+{
+    for (size_t i=0; i<allstl.size(); i++)
+        std::cout << allstl[i]->filename << std::endl;
+    
+    std::cout << "----------\n";
+    std::cout << allstl.size() << " files\n";
 }
 
 /*************************************************************************************************
