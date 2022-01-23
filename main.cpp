@@ -8,7 +8,7 @@
  * 
  */
 
-#define VERSION "v0.4.9"
+#define VERSION "v0.4.10"
 
 // #define USE_FULL_SCREEN      // create mainwindow with SCREEN_WIDTH / SCREEN_HEIGHT
 
@@ -73,26 +73,26 @@ static void timer (int v);
 void help()
 {
     cout << "---- Keyboard shortcuts ----\n";
-    cout << "h : this message\n";
-    cout << "q : quit\n";
-    cout << "k : show special key's\n";
-    cout << "t : draw triangles ON/OFF\n";
-    cout << "l : draw lines ON/OFF\n";
-    cout << "p : draw points ON/OFF\n";
-    cout << "a : draw axis, Max, planes ON/OFF\n";
-    cout << "f : Model einpassen (fit in)\n";
-    cout << "v : Vorderansicht XY-plane\n";
-    cout << "d : Draufsicht XZ-plane\n";
-    cout << "s : Seitenansicht von links YZ-plane\n";
-    cout << "o : optimiere Normal-Vektoren\n";
-    cout << "c : draw Flächenrückseite (back face) on/off\n\n";
-    cout << "n : Liste alle Modelnamen auf\n";
+    cout << " h : this message\n";
+    cout << " q : quit\n";
+    cout << " k : show special key's\n";
+    cout << " t : draw triangles ON/OFF\n";
+    cout << " l : draw lines ON/OFF\n";
+    cout << " p : draw points ON/OFF\n";
+    cout << " a : draw axis, Max, planes ON/OFF\n";
+    cout << " f : Model einpassen (fit in)\n";
+    cout << " v : Vorderansicht XY-plane\n";
+    cout << " d : Draufsicht XZ-plane\n";
+    cout << " s : Seitenansicht von links YZ-plane\n";
+    cout << " o : optimiere Normal-Vektoren\n";
+    cout << " c : draw Flächenrückseite (back face) on/off\n\n";
+    cout << " n : Liste alle Modelnamen auf\n";
     cout << "\n";
-    cout << "0 : Light 0 on/off\n";
-    cout << "1 : Light 1 on/off\n";
+    cout << " 0 : Light 0 on/off\n";
+    cout << " 1 : Light 1 on/off\n";
     cout << "\n";
-    cout << "ESC : clear select buffer\n";
-    cout << "Entf : erase select triangle\n";
+    cout << " ESC : clear select buffer\n";
+    cout << " Entf : erase select triangle\n";
     cout << "\n";
 }
 
@@ -111,16 +111,16 @@ void show_options()
 #define LEERSTELLEN 20
 void show_special_keys() {
     cout << "------------ special keys -----------------\n";
-    cout << "            +/- : zoom\n";
-    cout << "        →|←|↑|↓ : rotation 15°\n";
-    cout << "Shift + →|←|↑|↓ : rotation 90°\n";
-    cout << " Strg + →|←|↑|↓ : move\n";
+    cout << "             +/- : zoom\n";
+    cout << "         →|←|↑|↓ : rotation 15°\n";
+    cout << " Shift + →|←|↑|↓ : rotation 90°\n";
+    cout << "  Strg + →|←|↑|↓ : move\n";
     cout << "\n";
-    cout << "mouse left button        : rotation\n";
-    cout << "mouse wheel              : zoom\n";
-    cout << "Strg + mouse left button : move\n";
+    cout << " mouse left button        : rotation\n";
+    cout << " mouse wheel              : zoom\n";
+    cout << " Strg + mouse left button : move\n";
     cout << "\n";
-    cout << "Shift + mouse left button : select triangle\n";
+    cout << " Shift + mouse left button : select triangle\n";
     cout << "\n";
 }
 

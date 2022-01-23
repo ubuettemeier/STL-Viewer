@@ -46,7 +46,7 @@ private:
     GLuint hauptebe_vboID[1] = {0};    // VBO für Hauptebenen
 };
 
-bool basics::draw_basics = 1;
+bool basics::draw_basics = 0;
 
 /**********************************************************************************
  * @brief Construct a new basics::basics object

@@ -1,6 +1,6 @@
 ## STL-Viewer
 simple STL File Viewer
-<pre>usage: ./stlviewer  file, ...
+<pre>usage: ./stlviewer  file1  file2  ...
 example: ./stlviewer  STL_data/baby-tux_bin.STL</pre>
 --- Entwicklungsumgebung ---
 
