@@ -13,7 +13,9 @@ stlviewer
 Muehle - Galerie-1.STL
 Muehle - Grundmauer-1.STL
 STL_data/Testmodelle/*
+STL_data/delta/*
 
+go_delta.sh
 go_start.txt
 git.txt
 

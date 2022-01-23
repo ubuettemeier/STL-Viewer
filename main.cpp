@@ -8,7 +8,7 @@
  * 
  */
 
-#define VERSION "v0.4.7"
+#define VERSION "v0.4.8"
 
 // Mit USE_FULL_SCREEN wird das Programm mit SCREEN_WIDTH / SCREEN_HEIGHT gestartet.
 // #define USE_FULL_SCREEN

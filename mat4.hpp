@@ -30,7 +30,7 @@ void vec4print_vec (float *p);
 void vec3set (const float wert, float *res);
 void vec3set (const float x, const float y, const float z, float *res);
 void vec4set (float x, float y, float z, float u, float *res);
-void vec3copy (float *a, float *b);                     // a => b
+void vec3copy (float *a, float *b);                 // a => b
 void vec4copy (float *a, float *b);
 void vec3change (float *a, float *b);
 void vec3rot_vec (float *rsp, float *rep,
